@@ -1,8 +1,7 @@
 require 'spec_helper'
 include RescueFromDuplicate
 
-describe ActiveRecord::RescueFromDuplicate do
-  let(:message) { "Duplicate entry '1-Rescuable-toto' for key 'index_rescuable_on_shop_id_and_type_and_name'" }
+shared_examples 'database error rescuing' do
   let(:uniqueness_exception) { ActiveRecord::RecordNotUnique.new(message) }
 
   subject { Rescuable.new }
@@ -13,7 +12,7 @@ describe ActiveRecord::RescueFromDuplicate do
 
   describe "#exception_columns" do
     context "index cannot be found" do
-      let(:message) { super().gsub(/'index_.*'/, "'index_toto'") }
+      let(:message) { super().gsub(/index_\w+/, "index_toto").gsub(/column .* is/, 'toto') }
       let(:exception) { ActiveRecord::RecordNotUnique.new(message, nil) }
 
       it "returns nil" do
@@ -44,10 +43,20 @@ describe ActiveRecord::RescueFromDuplicate do
         expect(subject.exception_validator(uniqueness_exception)).to be_nil
       end
     end
+
+    context "validator doesn't specify :rescue_with_errors" do
+      before {
+        Rescuable.stub(:_validators => {:name => [Rescuable.uniqueness_validator_without_rescue]})
+      }
+
+      it "returns nil" do
+        expect(subject.exception_validator(uniqueness_exception)).to be_nil
+      end
+    end
   end
 
   describe "#create_or_update when the validation fails" do
-    before { Base.exception = uniqueness_exception }
+    before { Base.stub(:exception => uniqueness_exception) }
 
     context "when the validator is present" do
       it "adds an error to the model" do
@@ -65,3 +74,23 @@ describe ActiveRecord::RescueFromDuplicate do
     end
   end
 end
+
+describe ActiveRecord::RescueFromDuplicate do
+  context 'mysql' do
+    let(:message) { "Duplicate entry '1-Rescuable-toto' for key index_rescuable_on_shop_id_and_type_and_name" }
+    it_behaves_like 'database error rescuing'
+  end
+
+  # context 'pgsql' do
+  #   let(:message) { "PG::UniqueViolation: ERROR:  duplicate key value violates unique constraint \"index_postgresql_models_on_name\"\nDETAIL:  Key (name)=(toto) already exists.\n: INSERT INTO \"postgresql_models\" (\"name\") VALUES ($1) RETURNING \"id\"" }
+  #   it_behaves_like 'database error rescuing'
+  # end
+
+  context 'sqlite3' do
+    let(:message) { "SQLite3::ConstraintException: column shop_id, type, name is not unique: INSERT INTO \"sqlite3_models\" (\"shop_id\", \"type\", \"name\") VALUES (?, ?, ?)" }
+    it_behaves_like 'database error rescuing'
+  end
+end
+
+
+
