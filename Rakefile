@@ -7,15 +7,14 @@ task :default => :spec
 
 namespace :spec do
   task :all do
-    %w(3.2).each do |ar_version|
-      command = %W{
-        BUNDLE_GEMFILE=spec/gemfiles/Gemfile.ar-#{ar_version}
-        MYSQL=1
-        POSTGRES=1
-        rspec
-      }.join(' ')
-      puts command
-      puts `#{command}`
+    %w(3.2 4.0 edge).each do |ar_version|
+      system(
+        {
+          "BUNDLE_GEMFILE" => "spec/gemfiles/Gemfile.ar-#{ar_version}",
+          "MYSQL" => "1"
+        },
+        "rspec"
+      )
     end
   end
 end
