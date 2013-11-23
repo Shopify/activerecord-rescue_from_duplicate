@@ -1,8 +1,11 @@
-require 'pry'
-require 'pry-debugger'
 require 'active_record'
 require 'activerecord-rescue_from_duplicate'
-require 'database_cleaner'
+
+begin
+  require 'pry'
+  require 'pry-debugger'
+rescue LoadError
+end
 
 require 'simplecov'
 require 'coveralls'
