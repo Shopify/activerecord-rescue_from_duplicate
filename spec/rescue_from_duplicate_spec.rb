@@ -2,7 +2,7 @@ require 'spec_helper'
 include RescueFromDuplicate
 
 shared_examples 'database error rescuing' do
-  let(:uniqueness_exception) { ActiveRecord::RecordNotUnique.new(message) }
+  let(:uniqueness_exception) { ActiveRecord::RecordNotUnique.new(message, nil) }
 
   subject { Rescuable.new }
 

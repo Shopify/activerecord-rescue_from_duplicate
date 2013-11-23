@@ -1,3 +1,5 @@
+require 'active_support/core_ext/class'
+
 module ActiveRecord::RescueFromDuplicate
   module Extension
     def create_or_update(*params, &block)
