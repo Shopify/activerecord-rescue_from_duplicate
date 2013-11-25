@@ -5,7 +5,7 @@ shared_examples 'a model with rescued unique' do
     context 'when catching a race condition' do
 
       before(:each) {
-        described_class.unscoped.class.any_instance.stub(:exists? => false)
+        ActiveRecord::Validations::UniquenessValidator.any_instance.stub(:validate_each => nil)
         described_class.create!(:name => 'toto', :size => 5)
       }
 
