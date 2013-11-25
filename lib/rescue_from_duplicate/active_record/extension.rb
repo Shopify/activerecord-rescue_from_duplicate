@@ -1,6 +1,6 @@
 require 'active_support/core_ext/class'
 
-module ActiveRecord::RescueFromDuplicate
+module RescueFromDuplicate::ActiveRecord
   module Extension
     def create_or_update(*params, &block)
       super
@@ -49,7 +49,7 @@ module ActiveRecord::RescueFromDuplicate
     def rescue_with_validator(columns, validator)
       validator_columns = (Array(validator.options[:scope]) + validator.attributes).map(&:to_s).sort
       return false unless columns == validator_columns
-      validator.options.fetch(:rescue_with_errors) { false }
+      validator.options.fetch(:rescue_from_duplicate) { false }
     end
   end
 end
