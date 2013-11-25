@@ -17,3 +17,4 @@ env:
 matrix:
   allow_failures:
     - gemfile: gemfiles/Gemfile.ar-edge
+    - env: POSTGRES=1

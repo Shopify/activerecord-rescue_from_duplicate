@@ -78,14 +78,14 @@ end
 describe ActiveRecord::RescueFromDuplicate do
   if defined?(MysqlModel)
     context 'mysql' do
-      let(:message) { "Duplicate entry '1-Rescuable-toto' for key index_rescuable_on_shop_id_and_type_and_name" }
+      let(:message) { "Duplicate entry '1-Rescuable-toto' for key 'index_rescuable_on_shop_id_and_type_and_name'" }
       it_behaves_like 'database error rescuing'
     end
   end
 
   if defined?(PostgresqlModel)
     context 'pgsql' do
-      let(:message) { "PG::UniqueViolation: ERROR:  duplicate key value violates unique constraint \"index_postgresql_models_on_name\"\nDETAIL:  Key (name)=(toto) already exists.\n: INSERT INTO \"postgresql_models\" (\"name\") VALUES ($1) RETURNING \"id\"" }
+      let(:message) { "PG::UniqueViolation: ERROR:  duplicate key value violates unique constraint \"index_rescuable_on_shop_id_and_type_and_name\"\nDETAIL:  Key (shop_id, type, name)=(1, Rescuable, toto) already exists.\n: INSERT INTO \"postgresql_models\" (\"shop_id\", \"type\", \"name\") VALUES ($1, $2, $3) RETURNING \"id\"" }
       it_behaves_like 'database error rescuing'
     end
   end
@@ -95,6 +95,3 @@ describe ActiveRecord::RescueFromDuplicate do
     it_behaves_like 'database error rescuing'
   end
 end
-
-
-
