@@ -1,4 +1,4 @@
-# Activerecord::RescueFromDuplicate
+# ActiveRecord - RescueFromDuplicate
 
 This gem will rescue from MySQL and Sqlite errors when trying to insert records that fail uniqueness validation.
 PostgreSQL is not supported at the moment because of the errors raised when using prepared statements.
