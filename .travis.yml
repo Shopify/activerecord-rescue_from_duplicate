@@ -8,9 +8,10 @@ gemfile:
 
 before_script:
   - mysql -e 'create database rescue_from_duplicate;'
+  - psql -c 'create database rescue_from_duplicate;' -U postgres
 
 env:
-  - POSTGRES=1 POSTGRES_URL=$(curl http://api.postgression.com)
+  - POSTGRES=1
   - MYSQL=1
 
 matrix:

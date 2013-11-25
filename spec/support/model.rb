@@ -9,7 +9,7 @@ AR_4_1 = Gem::Version.new('4.1.0.beta')
 ActiveRecord::Base.configurations = {
   'test_sqlite3' => {adapter: 'sqlite3', database: "/tmp/rescue_from_duplicate.db"},
   'test_postgresql' => {adapter: 'postgresql', database: 'rescue_from_duplicate', username: 'postgres'},
-  'test_mysql' => {adapter: 'mysql2', database: 'rescue_from_duplicate', username: 'root', host: '127.0.0.1', port: 13306},
+  'test_mysql' => {adapter: 'mysql2', database: 'rescue_from_duplicate', username: 'travis'},
 }
 
 class CreateAllTables < ActiveRecord::Migration
