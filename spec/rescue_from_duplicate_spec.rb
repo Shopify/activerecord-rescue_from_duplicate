@@ -76,15 +76,19 @@ shared_examples 'database error rescuing' do
 end
 
 describe ActiveRecord::RescueFromDuplicate do
-  context 'mysql' do
-    let(:message) { "Duplicate entry '1-Rescuable-toto' for key index_rescuable_on_shop_id_and_type_and_name" }
-    it_behaves_like 'database error rescuing'
+  if defined?(MysqlModel)
+    context 'mysql' do
+      let(:message) { "Duplicate entry '1-Rescuable-toto' for key index_rescuable_on_shop_id_and_type_and_name" }
+      it_behaves_like 'database error rescuing'
+    end
   end
 
-  # context 'pgsql' do
-  #   let(:message) { "PG::UniqueViolation: ERROR:  duplicate key value violates unique constraint \"index_postgresql_models_on_name\"\nDETAIL:  Key (name)=(toto) already exists.\n: INSERT INTO \"postgresql_models\" (\"name\") VALUES ($1) RETURNING \"id\"" }
-  #   it_behaves_like 'database error rescuing'
-  # end
+  if defined?(PostgresqlModel)
+    context 'pgsql' do
+      let(:message) { "PG::UniqueViolation: ERROR:  duplicate key value violates unique constraint \"index_postgresql_models_on_name\"\nDETAIL:  Key (name)=(toto) already exists.\n: INSERT INTO \"postgresql_models\" (\"name\") VALUES ($1) RETURNING \"id\"" }
+      it_behaves_like 'database error rescuing'
+    end
+  end
 
   context 'sqlite3' do
     let(:message) { "SQLite3::ConstraintException: column shop_id, type, name is not unique: INSERT INTO \"sqlite3_models\" (\"shop_id\", \"type\", \"name\") VALUES (?, ?, ?)" }
