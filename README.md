@@ -1,6 +1,14 @@
 # Activerecord::RescueFromDuplicate
 
-TODO: Write a gem description
+This gem will rescue from MySQL and Sqlite errors when trying to insert records that fail uniqueness validation.
+PostgreSQL is not supported at the moment because of the errors raised when using prepared statements.
+
+It complements `:validates_uniqueness_of` and will add appropriate errors.
+
+**Note:**
+
+* All `before_*` filters will have been run.
+* Unlike failed validation, `ActiveRecord::RecordNotSaved` will be raised when using `create!`, `save!` or other `!` methods.
 
 ## Installation
 
@@ -18,7 +26,26 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Add the `:rescue_from_duplicate => true` to any regular uniqueness validation.
+
+```ruby
+class ModelWithUniquenessValidator < ActiveRecord::Base
+  validates_uniqueness_of :name, :scope => :shop_id, :rescue_from_duplicate => true
+end
+```
+
+If two of this statement go in at the same time, and the original validation on uniqueness of name passes, the DBMS will raise an duplicate record error.
+
+```ruby
+a = ModelWithUniquenessValidator.create(:name => "name")
+
+# in a different thread, causing race condition
+b = ModelWithUniquenessValidator.create(:name => "name")
+
+a.persisted? #=> true
+b.persisted? #=> false
+b.errors[:name] #=> ["has already been taken"]
+```
 
 ## Contributing
 

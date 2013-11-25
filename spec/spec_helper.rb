@@ -33,7 +33,7 @@ module RescueFromDuplicate
     extend ActiveModel::Naming
     extend ActiveModel::Translation
     include ActiveModel::AttributeMethods
-    include ActiveRecord::RescueFromDuplicate::Extension
+    include RescueFromDuplicate::ActiveRecord::Extension
 
     define_attribute_methods ['name']
     attr_accessor :name
@@ -65,15 +65,15 @@ module RescueFromDuplicate
     end
 
     def self.uniqueness_validator
-      @uniqueness_validator ||= ActiveRecord::Validations::UniquenessValidator.new(
+      @uniqueness_validator ||= ::ActiveRecord::Validations::UniquenessValidator.new(
         :attributes => [:name],
         :case_sensitive => true, :scope => [:shop_id, :type],
-        :rescue_with_errors => true
+        :rescue_from_duplicate => true
       ).tap { |o| o.setup(self) if o.respond_to?(:setup) }
     end
 
     def self.uniqueness_validator_without_rescue
-      @uniqueness_validator_without_rescue ||= ActiveRecord::Validations::UniquenessValidator.new(
+      @uniqueness_validator_without_rescue ||= ::ActiveRecord::Validations::UniquenessValidator.new(
         :attributes => [:name],
         :case_sensitive => true, :scope => [:shop_id, :type]
       ).tap { |o| o.setup(self) if o.respond_to?(:setup) }
@@ -84,7 +84,7 @@ module RescueFromDuplicate
     end
 
     def self.index
-      @index ||= ActiveRecord::ConnectionAdapters::IndexDefinition.new(
+      @index ||= ::ActiveRecord::ConnectionAdapters::IndexDefinition.new(
         "rescuable",
         "index_rescuable_on_shop_id_and_type_and_name",
         true,

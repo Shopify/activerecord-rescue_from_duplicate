@@ -2,7 +2,7 @@ require 'spec_helper'
 include RescueFromDuplicate
 
 shared_examples 'database error rescuing' do
-  let(:uniqueness_exception) { ActiveRecord::RecordNotUnique.new(message, nil) }
+  let(:uniqueness_exception) { ::ActiveRecord::RecordNotUnique.new(message, nil) }
 
   subject { Rescuable.new }
 
@@ -44,7 +44,7 @@ shared_examples 'database error rescuing' do
       end
     end
 
-    context "validator doesn't specify :rescue_with_errors" do
+    context "validator doesn't specify :rescue_from_duplicate" do
       before {
         Rescuable.stub(:_validators => {:name => [Rescuable.uniqueness_validator_without_rescue]})
       }
@@ -75,7 +75,7 @@ shared_examples 'database error rescuing' do
   end
 end
 
-describe ActiveRecord::RescueFromDuplicate do
+describe RescueFromDuplicate::ActiveRecord do
   if defined?(MysqlModel)
     context 'mysql' do
       let(:message) { "Duplicate entry '1-Rescuable-toto' for key 'index_rescuable_on_shop_id_and_type_and_name'" }

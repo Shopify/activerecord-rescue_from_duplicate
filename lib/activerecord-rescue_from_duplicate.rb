@@ -1,1 +1,1 @@
-require 'active_record/rescue_from_duplicate'
+require 'rescue_from_duplicate/active_record'

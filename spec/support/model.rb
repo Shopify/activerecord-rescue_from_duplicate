@@ -49,7 +49,7 @@ module TestModel
   extend ActiveSupport::Concern
 
   included do
-    validates_uniqueness_of :name, :rescue_with_errors => true
+    validates_uniqueness_of :name, :rescue_from_duplicate => true
     validates_uniqueness_of :size
   end
 end

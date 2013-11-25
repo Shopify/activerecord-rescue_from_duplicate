@@ -1,15 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'active_record/rescue_from_duplicate/version'
+require 'rescue_from_duplicate/active_record/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "activerecord-rescue_from_duplicate"
   spec.version       = Activerecord::RescueFromDuplicate::VERSION
   spec.authors       = ["Guillaume Malette"]
   spec.email         = ["guillaume@jadedpixel.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{Rescue from MySQL and Sqlite duplicate errors}
+  spec.summary       = %q{Rescue from MySQL and Sqlite duplicate errors when trying to insert records that fail uniqueness validation}
   spec.homepage      = ""
   spec.license       = "MIT"
 
