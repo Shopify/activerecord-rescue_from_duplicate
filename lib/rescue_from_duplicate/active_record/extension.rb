@@ -4,10 +4,10 @@ module RescueFromDuplicate::ActiveRecord
   module Extension
     def create_or_update(*params, &block)
       super
-    rescue ActiveRecord::RecordNotUnique => e
-      validator = exception_validator(e)
+    rescue ActiveRecord::RecordNotUnique => exception
+      validator = exception_validator(exception)
 
-      raise e unless validator
+      raise exception unless validator
 
       attribute = validator.attributes.first
       options = validator.options.except(:case_sensitive, :scope).merge(:value => self.send(:read_attribute_for_validation, attribute))
