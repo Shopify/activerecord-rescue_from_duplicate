@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["guillaume@jadedpixel.com"]
   spec.description   = %q{Rescue from MySQL and Sqlite duplicate errors}
   spec.summary       = %q{Rescue from MySQL and Sqlite duplicate errors when trying to insert records that fail uniqueness validation}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/Shopify/activerecord-rescue_from_duplicate"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
