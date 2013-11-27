@@ -1,5 +1,7 @@
 # ActiveRecord - RescueFromDuplicate
 
+[![Build Status](https://travis-ci.org/Shopify/activerecord-rescue_from_duplicate.png?branch=master)](https://travis-ci.org/Shopify/activerecord-rescue_from_duplicate)
+
 This gem will rescue from MySQL and Sqlite errors when trying to insert records that fail uniqueness validation.
 PostgreSQL is not supported at the moment because of the errors raised when using prepared statements.
 
