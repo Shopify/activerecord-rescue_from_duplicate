@@ -12,11 +12,11 @@ shared_examples 'database error rescuing' do
 
   describe "#exception_columns" do
     context "index cannot be found" do
-      let(:message) { super().gsub(/index_\w+/, "index_toto").gsub(/column .* is/, 'toto') }
+      let(:message) { super().gsub(/index_\w+/, "index_toto").gsub(/column .* is/, 'column toto is') }
       let(:exception) { ActiveRecord::RecordNotUnique.new(message, nil) }
 
-      it "returns nil" do
-        expect(subject.exception_columns(exception)).to be_nil
+      it "returns an array" do
+        expect(subject.exception_columns(exception)).to be_a Array
       end
     end
 
@@ -47,6 +47,39 @@ shared_examples 'database error rescuing' do
     context "validator doesn't specify :rescue_from_duplicate" do
       before {
         Rescuable.stub(:_validators => {:name => [Rescuable.uniqueness_validator_without_rescue]})
+      }
+
+      it "returns nil" do
+        expect(subject.exception_validator(uniqueness_exception)).to be_nil
+      end
+    end
+
+    context "no validator" do
+      before {
+        Rescuable.stub(:_validators => {})
+      }
+
+      it "returns nil" do
+        expect(subject.exception_validator(uniqueness_exception)).to be_nil
+      end
+    end
+
+    context "no index on the table" do
+      before {
+        Rescuable.stub(:index => nil)
+        Rescuable.stub(:connection => double(:indexes => []))
+      }
+
+      let(:message) { super().gsub(/column (.*) is/, 'column toto is') }
+
+      it "returns nil" do
+        expect(subject.exception_validator(uniqueness_exception)).to be_nil
+      end
+    end
+
+    context "columns part of the index of another table" do
+      before {
+        subject.stub(:exception_columns => ['foo', 'baz'])
       }
 
       it "returns nil" do

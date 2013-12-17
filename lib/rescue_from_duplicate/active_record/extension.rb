@@ -43,7 +43,7 @@ module RescueFromDuplicate::ActiveRecord
 
     def other_exception_columns(exception)
       indexes = self.class.connection.indexes(self.class.table_name)
-      indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns)
+      indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
     end
 
     def rescue_with_validator(columns, validator)
