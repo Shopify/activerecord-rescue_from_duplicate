@@ -7,24 +7,7 @@ shared_examples 'database error rescuing' do
   subject { Rescuable.new }
 
   before do
-    Rescuable.stub(connection: double(indexes: [Rescuable.index]))
-  end
-
-  describe "#exception_columns" do
-    context "index cannot be found" do
-      let(:message) { super().gsub(/index_\w+/, "index_toto").gsub(/column .* is/, 'column toto is') }
-      let(:exception) { ActiveRecord::RecordNotUnique.new(message, nil) }
-
-      it "returns an array" do
-        expect(subject.exception_columns(exception)).to be_a Array
-      end
-    end
-
-    context "index can be found" do
-      it "returns the columns" do
-        expect(subject.exception_columns(uniqueness_exception).sort).to eq ["shop_id", "type", "name"].sort
-      end
-    end
+    allow(Rescuable).to receive(:connection).and_return(double(indexes: [Rescuable.index]))
   end
 
   describe "#exception_validator" do
@@ -104,6 +87,19 @@ shared_examples 'database error rescuing' do
       it "raises an exception" do
         expect{ subject.create_or_update }.to raise_error(ActiveRecord::RecordNotUnique)
       end
+    end
+  end
+
+  describe "#create_or_update when using rescuer without validation" do
+    before {
+      Rescuable.stub(_validators: {})
+      Rescuable.stub(_rescue_from_duplicates: [Rescuable.uniqueness_rescuer])
+      Base.stub(exception: uniqueness_exception)
+    }
+
+    it "adds an error to the model" do
+      subject.create_or_update
+      expect(subject.errors[:name]).to eq ["is not unique by type and shop id"]
     end
   end
 end

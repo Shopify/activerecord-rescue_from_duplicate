@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-shared_examples 'a model with rescued unique' do
+shared_examples 'a model with rescued uniqueness validator' do
   describe 'create!' do
     context 'when catching a race condition' do
 
@@ -46,17 +46,17 @@ shared_examples 'a model with rescued unique' do
 end
 
 describe Sqlite3Model do
-  it_behaves_like 'a model with rescued unique'
+  it_behaves_like 'a model with rescued uniqueness validator'
 end
 
 if defined?(MysqlModel)
   describe MysqlModel do
-    it_behaves_like 'a model with rescued unique'
+    it_behaves_like 'a model with rescued uniqueness validator'
   end
 end
 
 if defined?(PostgresqlModel)
   describe PostgresqlModel do
-    it_behaves_like 'a model with rescued unique'
+    it_behaves_like 'a model with rescued uniqueness validator'
   end
 end

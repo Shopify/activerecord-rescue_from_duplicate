@@ -77,6 +77,12 @@ module RescueFromDuplicate
       ).tap { |o| o.setup(self) if o.respond_to?(:setup) }
     end
 
+    def self.uniqueness_rescuer
+      @uniqueness_rescuer ||= RescueFromDuplicate::Rescuer.new(
+        :name, scope: [:shop_id, :type], message: "is not unique by type and shop id"
+      )
+    end
+
     def self.presence_validator
       @presence_validator ||= ActiveModel::Validations::PresenceValidator.new(attributes: [:name])
     end
@@ -105,7 +111,6 @@ Dir[File.expand_path(File.join(File.dirname(__FILE__), 'support', '**', '*.rb'))
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
 
