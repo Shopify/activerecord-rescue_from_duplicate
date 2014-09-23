@@ -10,7 +10,7 @@ module RescueFromDuplicate::ActiveRecord
       raise exception unless validator
 
       attribute = validator.attributes.first
-      options = validator.options.except(:case_sensitive, :scope).merge(:value => self.send(:read_attribute_for_validation, attribute))
+      options = validator.options.except(:case_sensitive, :scope).merge(value: self.send(:read_attribute_for_validation, attribute))
 
       self.errors.add(attribute, :taken, options)
       false

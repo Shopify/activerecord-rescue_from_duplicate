@@ -56,7 +56,7 @@ module RescueFromDuplicate
 
     def self._validators
       @validators ||= {
-        :name =>
+        name:
         [
           uniqueness_validator,
           presence_validator
@@ -66,21 +66,21 @@ module RescueFromDuplicate
 
     def self.uniqueness_validator
       @uniqueness_validator ||= ::ActiveRecord::Validations::UniquenessValidator.new(
-        :attributes => [:name],
-        :case_sensitive => true, :scope => [:shop_id, :type],
-        :rescue_from_duplicate => true
+        attributes: [:name],
+        case_sensitive: true, scope: [:shop_id, :type],
+        rescue_from_duplicate: true
       ).tap { |o| o.setup(self) if o.respond_to?(:setup) }
     end
 
     def self.uniqueness_validator_without_rescue
       @uniqueness_validator_without_rescue ||= ::ActiveRecord::Validations::UniquenessValidator.new(
-        :attributes => [:name],
-        :case_sensitive => true, :scope => [:shop_id, :type]
+        attributes: [:name],
+        case_sensitive: true, scope: [:shop_id, :type]
       ).tap { |o| o.setup(self) if o.respond_to?(:setup) }
     end
 
     def self.presence_validator
-      @presence_validator ||= ActiveModel::Validations::PresenceValidator.new(:attributes => [:name])
+      @presence_validator ||= ActiveModel::Validations::PresenceValidator.new(attributes: [:name])
     end
 
     def self.index

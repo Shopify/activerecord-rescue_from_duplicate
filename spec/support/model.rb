@@ -21,8 +21,8 @@ class CreateAllTables < ActiveRecord::Migration
       t.integer :size
     end
 
-    add_index name, :name, :unique => true
-    add_index name, :size, :unique => true
+    add_index name, :name, unique: true
+    add_index name, :size, unique: true
   end
 
   def self.up
@@ -49,7 +49,7 @@ module TestModel
   extend ActiveSupport::Concern
 
   included do
-    validates_uniqueness_of :name, :rescue_from_duplicate => true
+    validates_uniqueness_of :name, rescue_from_duplicate: true
     validates_uniqueness_of :size
   end
 end
