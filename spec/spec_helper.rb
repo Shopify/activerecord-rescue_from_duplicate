@@ -1,3 +1,12 @@
+require 'simplecov'
+
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+SimpleCov.start do
+  add_filter '/spec/'
+end
+
 require 'active_record'
 require 'activerecord-rescue_from_duplicate'
 
@@ -7,17 +16,6 @@ begin
 rescue LoadError
 end
 
-require 'simplecov'
-require 'coveralls'
-
-# lib = File.expand_path('../lib', __FILE__)
-# $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-
-# SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
-#   SimpleCov::Formatter::HTMLFormatter,
-#   Coveralls::SimpleCov::Formatter
-# ]
-# SimpleCov.start
 
 
 module RescueFromDuplicate
