@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = "activerecord-rescue_from_duplicate"
   spec.version       = Activerecord::RescueFromDuplicate::VERSION
   spec.authors       = ["Guillaume Malette"]
-  spec.email         = ["guillaume@jadedpixel.com"]
+  spec.email         = ["guillaume@shopify.com"]
   spec.description   = %q{Rescue from MySQL and Sqlite duplicate errors}
   spec.summary       = %q{Rescue from MySQL and Sqlite duplicate errors when trying to insert records that fail uniqueness validation}
   spec.homepage      = "https://github.com/Shopify/activerecord-rescue_from_duplicate"
