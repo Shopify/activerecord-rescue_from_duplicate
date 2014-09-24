@@ -11,8 +11,7 @@ before_script:
   - psql -c 'create database rescue_from_duplicate;' -U postgres
 
 env:
-  - POSTGRES=1
-  - MYSQL=1
+  - POSTGRES=1 MYSQL=1
 
 matrix:
   allow_failures:
