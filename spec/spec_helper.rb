@@ -12,7 +12,6 @@ require 'activerecord-rescue_from_duplicate'
 
 begin
   require 'pry'
-  require 'pry-debugger'
 rescue LoadError
 end
 
