@@ -17,10 +17,14 @@ class CreateAllTables < ActiveRecord::Migration
     execute "drop table if exists #{name}"
 
     create_table(name, *args) do |t|
+      t.integer :relation_id
+      t.string :handle
+
       t.string :name
       t.integer :size
     end
 
+    add_index name, [:relation_id, :handle], unique: true
     add_index name, :name, unique: true
     add_index name, :size, unique: true
   end
@@ -49,8 +53,10 @@ module TestModel
   extend ActiveSupport::Concern
 
   included do
-    validates_uniqueness_of :name, rescue_from_duplicate: true
-    validates_uniqueness_of :size
+    rescue_from_duplicate :handle, scope: :relation_id, message: "handle must be unique for this relation"
+
+    validates_uniqueness_of :name, rescue_from_duplicate: true, allow_nil: true
+    validates_uniqueness_of :size, allow_nil: true
   end
 end
 

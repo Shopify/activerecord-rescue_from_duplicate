@@ -11,16 +11,8 @@ before_script:
   - psql -c 'create database rescue_from_duplicate;' -U postgres
 
 env:
-  - POSTGRES=1
-  - MYSQL=1
+  - POSTGRES=1 MYSQL=1
 
 matrix:
   allow_failures:
     - gemfile: gemfiles/Gemfile.ar-edge
-    - env: POSTGRES=1
-    - gemfile: gemfiles/Gemfile.ar-edge
-      env: MYSQL=1
-      rvm: 1.9.3
-    - gemfile: gemfiles/Gemfile.ar-edge
-      env: MYSQL=1
-      rvm: 2.0.0

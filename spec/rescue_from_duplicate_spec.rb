@@ -53,7 +53,7 @@ shared_examples 'database error rescuing' do
         Rescuable.stub(connection: double(indexes: []))
       }
 
-      let(:message) { super().gsub(/column (.*) is/, 'column toto is') }
+      let(:message) { super().gsub(/column (.*?) is/, 'column toto is').gsub(/Key \((.*?)\)=/, 'Key (toto)=') }
 
       it "returns nil" do
         expect(subject.exception_validator(uniqueness_exception)).to be_nil
