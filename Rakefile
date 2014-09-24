@@ -7,7 +7,7 @@ task :default => :spec
 
 namespace :spec do
   task :all do
-    %w(3.2 4.0 edge).each do |ar_version|
+    %w(3.2 4.0 4.1 edge).each do |ar_version|
       system(
         {
           "BUNDLE_GEMFILE" => "spec/gemfiles/Gemfile.ar-#{ar_version}",
