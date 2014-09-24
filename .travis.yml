@@ -17,10 +17,3 @@ env:
 matrix:
   allow_failures:
     - gemfile: gemfiles/Gemfile.ar-edge
-    - env: POSTGRES=1
-    - gemfile: gemfiles/Gemfile.ar-edge
-      env: MYSQL=1
-      rvm: 1.9.3
-    - gemfile: gemfiles/Gemfile.ar-edge
-      env: MYSQL=1
-      rvm: 2.0.0
