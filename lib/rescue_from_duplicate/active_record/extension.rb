@@ -45,8 +45,14 @@ module RescueFromDuplicate::ActiveRecord
     protected
 
     def exception_columns(exception)
-      columns = exception.message =~ /SQLite3::ConstraintException/ ? sqlite3_exception_columns(exception) : other_exception_columns(exception)
-      columns.sort
+      columns = case
+      when exception.message =~ /SQLite3::ConstraintException/
+        sqlite3_exception_columns(exception)
+      when exception.message =~ /PG::UniqueViolation/
+        postgresql_exception_columns(exception)
+      else
+        other_exception_columns(exception)
+      end
     end
 
     def exception_rescuer(exception)
@@ -55,15 +61,23 @@ module RescueFromDuplicate::ActiveRecord
       _rescue_from_duplicates.detect { |rescuer| rescuer.matches?(columns) }
     end
 
+    def postgresql_exception_columns(exception)
+      extract_columns(exception.message[/Key \((.*?)\)=\(.*?\) already exists./, 1])
+    end
+
     def sqlite3_exception_columns(exception)
-      columns = exception.message[/column (.*) is not unique/, 1]
-      return unless columns
-      columns.split(",").map(&:strip)
+      extract_columns(exception.message[/columns? (.*) (?:is|are) not unique/, 1])
+    end
+
+    def extract_columns(columns_string)
+      return unless columns_string
+      columns_string.split(",").map(&:strip).sort
     end
 
     def other_exception_columns(exception)
       indexes = self.class.connection.indexes(self.class.table_name)
-      indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
+      columns = indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
+      columns.sort
     end
 
     def rescue_with_validator?(columns, validator)
