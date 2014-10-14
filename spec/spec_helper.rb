@@ -43,22 +43,15 @@ module RescueFromDuplicate
       send(attribute)
     end
 
-    def _validators
-      self.class._validators
-    end
-
     def errors
       @errors ||= ActiveModel::Errors.new(self)
     end
 
-    def self._validators
-      @validators ||= {
-        name:
-        [
-          uniqueness_validator,
-          presence_validator
-        ]
-      }
+    def self.validators
+      @validators ||= [
+        uniqueness_validator,
+        presence_validator
+      ]
     end
 
     def self.uniqueness_validator

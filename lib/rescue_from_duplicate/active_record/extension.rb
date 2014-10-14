@@ -8,6 +8,10 @@ module RescueFromDuplicate::ActiveRecord
       def rescue_from_duplicate(attribute, options = {})
         self._rescue_from_duplicates += [RescueFromDuplicate::Rescuer.new(attribute, options)]
       end
+
+      def rescue_from_duplicate_handlers
+        self._rescue_from_duplicates + self.validators.select { |v| v.is_a?(ActiveRecord::Validations::UniquenessValidator) }
+      end
     end
 
     included do
@@ -18,7 +22,7 @@ module RescueFromDuplicate::ActiveRecord
     def create_or_update(*params, &block)
       super
     rescue ActiveRecord::RecordNotUnique => exception
-      handler = exception_validator(exception) || exception_rescuer(exception)
+      handler = exception_handler(exception)
 
       raise exception unless handler
 
@@ -29,17 +33,13 @@ module RescueFromDuplicate::ActiveRecord
       false
     end
 
-    def exception_validator(exception)
+    def exception_handler(exception)
       columns = exception_columns(exception)
 
-      self._validators.each do |attribute, validators|
-        validators.each do |validator|
-          next unless validator.is_a?(ActiveRecord::Validations::UniquenessValidator)
-          return validator if rescue_with_validator?(columns, validator)
-        end
+      self.class.rescue_from_duplicate_handlers.detect do |handler|
+        validator_columns = (Array(handler.options[:scope]) + handler.attributes).map(&:to_s).sort
+        columns == validator_columns && handler.options.fetch(:rescue_from_duplicate) { false }
       end
-
-      nil
     end
 
     protected
@@ -53,12 +53,6 @@ module RescueFromDuplicate::ActiveRecord
       else
         other_exception_columns(exception)
       end
-    end
-
-    def exception_rescuer(exception)
-      columns = exception_columns(exception)
-
-      _rescue_from_duplicates.detect { |rescuer| rescuer.matches?(columns) }
     end
 
     def postgresql_exception_columns(exception)
@@ -78,12 +72,6 @@ module RescueFromDuplicate::ActiveRecord
       indexes = self.class.connection.indexes(self.class.table_name)
       columns = indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
       columns.sort
-    end
-
-    def rescue_with_validator?(columns, validator)
-      validator_columns = (Array(validator.options[:scope]) + validator.attributes).map(&:to_s).sort
-      return false unless columns == validator_columns
-      validator.options.fetch(:rescue_from_duplicate) { false }
     end
   end
 end

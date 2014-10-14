@@ -1,20 +1,5 @@
 require 'spec_helper'
 
-describe RescueFromDuplicate::Rescuer do
-  subject { RescueFromDuplicate::Rescuer.new(:shop_id, scope: :name) }
-
-  context "#matches?" do
-    it 'is true when the columns are the same' do
-      expect(subject.matches?(["shop_id", "name"])).to be true
-      expect(subject.matches?(["name", "shop_id"])).to be true
-    end
-
-    it 'is false when the columns are not the same' do
-      expect(subject.matches?(["shop_id", "toto"])).to be false
-    end
-  end
-end
-
 shared_examples 'a model with rescued unique error without validator' do
   describe 'create!' do
     context 'when catching a race condition' do

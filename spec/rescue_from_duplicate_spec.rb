@@ -10,67 +10,6 @@ shared_examples 'database error rescuing' do
     allow(Rescuable).to receive(:connection).and_return(double(indexes: [Rescuable.index]))
   end
 
-  describe "#exception_validator" do
-    context "validator can be found" do
-      it "returns the validator" do
-        expect(subject.exception_validator(uniqueness_exception)).to eq Rescuable.uniqueness_validator
-      end
-    end
-
-    context "validator cannot be found" do
-      before {
-        Rescuable.stub(_validators: {name: [Rescuable.presence_validator]})
-      }
-
-      it "returns nil" do
-        expect(subject.exception_validator(uniqueness_exception)).to be_nil
-      end
-    end
-
-    context "validator doesn't specify :rescue_from_duplicate" do
-      before {
-        Rescuable.stub(_validators: {name: [Rescuable.uniqueness_validator_without_rescue]})
-      }
-
-      it "returns nil" do
-        expect(subject.exception_validator(uniqueness_exception)).to be_nil
-      end
-    end
-
-    context "no validator" do
-      before {
-        Rescuable.stub(_validators: {})
-      }
-
-      it "returns nil" do
-        expect(subject.exception_validator(uniqueness_exception)).to be_nil
-      end
-    end
-
-    context "no index on the table" do
-      before {
-        Rescuable.stub(index: nil)
-        Rescuable.stub(connection: double(indexes: []))
-      }
-
-      let(:message) { super().gsub(/column (.*?) is/, 'column toto is').gsub(/Key \((.*?)\)=/, 'Key (toto)=') }
-
-      it "returns nil" do
-        expect(subject.exception_validator(uniqueness_exception)).to be_nil
-      end
-    end
-
-    context "columns part of the index of another table" do
-      before {
-        subject.stub(exception_columns: ['foo', 'baz'])
-      }
-
-      it "returns nil" do
-        expect(subject.exception_validator(uniqueness_exception)).to be_nil
-      end
-    end
-  end
-
   describe "#create_or_update when the validation fails" do
     before { Base.stub(exception: uniqueness_exception) }
 
@@ -82,7 +21,7 @@ shared_examples 'database error rescuing' do
     end
 
     context "when the validator is not present" do
-      before { Rescuable.stub(_validators: {name: [Rescuable.presence_validator]}) }
+      before { Rescuable.stub(validators: [Rescuable.presence_validator]) }
 
       it "raises an exception" do
         expect{ subject.create_or_update }.to raise_error(ActiveRecord::RecordNotUnique)
