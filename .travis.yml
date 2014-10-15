@@ -1,11 +1,11 @@
 rvm:
-  - 1.9.3
-  - 2.0.0
   - 2.1.2
+  - 2.2.3
+  - 2.3.0
 gemfile:
-  - spec/gemfiles/Gemfile.ar-3.2
   - spec/gemfiles/Gemfile.ar-4.0
   - spec/gemfiles/Gemfile.ar-4.1
+  - spec/gemfiles/Gemfile.ar-4.2
   - spec/gemfiles/Gemfile.ar-edge
 
 before_script:

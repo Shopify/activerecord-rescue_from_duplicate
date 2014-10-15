@@ -10,8 +10,8 @@ Additionally, a macro allows you to assume that the record will be unique and re
 
 Tested with:
 
-- ActiveRecord: 3.2, 4.0, 4.1, edge
-- Ruby 1.9.3, 2.0.0, 2.1.2
+- ActiveRecord: 4.1, 4.2, edge
+- Ruby 2.1.2, 2.2.3, 2.3.0
 - MySQL, PostgreSQL, Sqlite3
 
 **Note:**
