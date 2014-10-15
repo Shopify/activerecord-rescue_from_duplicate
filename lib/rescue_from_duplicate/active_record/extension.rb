@@ -9,8 +9,11 @@ module RescueFromDuplicate::ActiveRecord
         self._rescue_from_duplicates += [RescueFromDuplicate::Rescuer.new(attribute, options)]
       end
 
-      def rescue_from_duplicate_handlers
-        self._rescue_from_duplicates + self.validators.select { |v| v.is_a?(ActiveRecord::Validations::UniquenessValidator) }
+      def _rescue_from_duplicate_handlers
+        validator_handlers = self.validators.select { |v| v.is_a?(ActiveRecord::Validations::UniquenessValidator) }.map do |v|
+          RescueFromDuplicate::UniquenessRescuer.new(v)
+        end
+        self._rescue_from_duplicates + validator_handlers
       end
     end
 
@@ -33,19 +36,18 @@ module RescueFromDuplicate::ActiveRecord
       false
     end
 
+    private
+
     def exception_handler(exception)
       columns = exception_columns(exception)
 
-      self.class.rescue_from_duplicate_handlers.detect do |handler|
-        validator_columns = (Array(handler.options[:scope]) + handler.attributes).map(&:to_s).sort
-        columns == validator_columns && handler.options.fetch(:rescue_from_duplicate) { false }
+      self.class._rescue_from_duplicate_handlers.detect do |handler|
+        handler.rescue? && columns == handler.columns
       end
     end
 
-    protected
-
     def exception_columns(exception)
-      columns = case
+      case
       when exception.message =~ /SQLite3::ConstraintException/
         sqlite3_exception_columns(exception)
       when exception.message =~ /PG::UniqueViolation/

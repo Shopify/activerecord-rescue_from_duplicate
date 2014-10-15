@@ -1,5 +1,21 @@
 require 'spec_helper'
 
+describe RescueFromDuplicate::Rescuer do
+  subject { RescueFromDuplicate::Rescuer.new(:name, scope: [:type, :shop_id], message: "Derp!") }
+
+  it "always rescues" do
+    expect(subject.rescue?).to eq true
+  end
+
+  it "sorts the columns" do
+    expect(subject.columns).to eq ['name', 'shop_id', 'type']
+  end
+
+  it "returns the options" do
+    expect(subject.options).to eq scope: [:type, :shop_id], message: "Derp!"
+  end
+end
+
 shared_examples 'a model with rescued unique error without validator' do
   describe 'create!' do
     context 'when catching a race condition' do

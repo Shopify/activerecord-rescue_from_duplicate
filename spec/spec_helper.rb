@@ -57,7 +57,7 @@ module RescueFromDuplicate
     def self.uniqueness_validator
       @uniqueness_validator ||= ::ActiveRecord::Validations::UniquenessValidator.new(
         attributes: [:name],
-        case_sensitive: true, scope: [:shop_id, :type],
+        case_sensitive: true, scope: [:type, :shop_id],
         rescue_from_duplicate: true
       ).tap { |o| o.setup(self) if o.respond_to?(:setup) }
     end

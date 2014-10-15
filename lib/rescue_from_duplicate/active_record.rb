@@ -8,6 +8,7 @@ module RescueFromDuplicate
 end
 
 require 'rescue_from_duplicate/active_record/extension'
+require 'rescue_from_duplicate/uniqueness_rescuer'
 require 'rescue_from_duplicate/rescuer'
 
 ActiveSupport.on_load(:active_record) do
