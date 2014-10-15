@@ -1,6 +1,6 @@
 module RescueFromDuplicate
   class Rescuer
-    attr_reader :attributes, :options
+    attr_reader :attributes, :options, :columns
 
     def initialize(attribute, options)
       @attributes = [attribute]
@@ -8,8 +8,8 @@ module RescueFromDuplicate
       @options = options
     end
 
-    def matches?(columns)
-      @columns == columns.map(&:to_s).sort
+    def rescue?
+      true
     end
   end
 end

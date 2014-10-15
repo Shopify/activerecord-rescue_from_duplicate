@@ -8,6 +8,13 @@ module RescueFromDuplicate::ActiveRecord
       def rescue_from_duplicate(attribute, options = {})
         self._rescue_from_duplicates += [RescueFromDuplicate::Rescuer.new(attribute, options)]
       end
+
+      def _rescue_from_duplicate_handlers
+        validator_handlers = self.validators.select { |v| v.is_a?(ActiveRecord::Validations::UniquenessValidator) }.map do |v|
+          RescueFromDuplicate::UniquenessRescuer.new(v)
+        end
+        self._rescue_from_duplicates + validator_handlers
+      end
     end
 
     included do
@@ -18,7 +25,7 @@ module RescueFromDuplicate::ActiveRecord
     def create_or_update(*params, &block)
       super
     rescue ActiveRecord::RecordNotUnique => exception
-      handler = exception_validator(exception) || exception_rescuer(exception)
+      handler = exception_handler(exception)
 
       raise exception unless handler
 
@@ -29,36 +36,25 @@ module RescueFromDuplicate::ActiveRecord
       false
     end
 
-    def exception_validator(exception)
+    private
+
+    def exception_handler(exception)
       columns = exception_columns(exception)
 
-      self._validators.each do |attribute, validators|
-        validators.each do |validator|
-          next unless validator.is_a?(ActiveRecord::Validations::UniquenessValidator)
-          return validator if rescue_with_validator?(columns, validator)
-        end
+      self.class._rescue_from_duplicate_handlers.detect do |handler|
+        handler.rescue? && columns == handler.columns
       end
-
-      nil
     end
 
-    protected
-
     def exception_columns(exception)
-      columns = case
+      case
       when exception.message =~ /SQLite3::ConstraintException/
         sqlite3_exception_columns(exception)
       when exception.message =~ /PG::UniqueViolation/
         postgresql_exception_columns(exception)
       else
         other_exception_columns(exception)
-      end
-    end
-
-    def exception_rescuer(exception)
-      columns = exception_columns(exception)
-
-      _rescue_from_duplicates.detect { |rescuer| rescuer.matches?(columns) }
+      end.sort
     end
 
     def postgresql_exception_columns(exception)
@@ -71,19 +67,12 @@ module RescueFromDuplicate::ActiveRecord
 
     def extract_columns(columns_string)
       return unless columns_string
-      columns_string.split(",").map(&:strip).sort
+      columns_string.split(",").map(&:strip)
     end
 
     def other_exception_columns(exception)
       indexes = self.class.connection.indexes(self.class.table_name)
-      columns = indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
-      columns.sort
-    end
-
-    def rescue_with_validator?(columns, validator)
-      validator_columns = (Array(validator.options[:scope]) + validator.attributes).map(&:to_s).sort
-      return false unless columns == validator_columns
-      validator.options.fetch(:rescue_from_duplicate) { false }
+      indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
     end
   end
 end

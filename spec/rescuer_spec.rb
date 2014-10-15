@@ -1,17 +1,18 @@
 require 'spec_helper'
 
 describe RescueFromDuplicate::Rescuer do
-  subject { RescueFromDuplicate::Rescuer.new(:shop_id, scope: :name) }
+  subject { RescueFromDuplicate::Rescuer.new(:name, scope: [:type, :shop_id], message: "Derp!") }
 
-  context "#matches?" do
-    it 'is true when the columns are the same' do
-      expect(subject.matches?(["shop_id", "name"])).to be true
-      expect(subject.matches?(["name", "shop_id"])).to be true
-    end
+  it "always rescues" do
+    expect(subject.rescue?).to eq true
+  end
 
-    it 'is false when the columns are not the same' do
-      expect(subject.matches?(["shop_id", "toto"])).to be false
-    end
+  it "sorts the columns" do
+    expect(subject.columns).to eq ['name', 'shop_id', 'type']
+  end
+
+  it "returns the options" do
+    expect(subject.options).to eq scope: [:type, :shop_id], message: "Derp!"
   end
 end
 
