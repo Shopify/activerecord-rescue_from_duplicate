@@ -45,18 +45,59 @@ shared_examples 'a model with rescued uniqueness validator' do
   end
 end
 
+shared_examples 'missing index finding' do
+  describe do
+    context 'all indexes are satisfied' do
+      it 'returns an empty array' do
+        expect(RescueFromDuplicate.missing_unique_indexes).to be_empty
+      end
+    end
+
+    context 'indexes are missing' do
+      before {
+        described_class.stub(_rescue_from_duplicate_handlers: [
+          RescueFromDuplicate::UniquenessRescuer.new(
+            ::ActiveRecord::Validations::UniquenessValidator.new(
+              attributes: [:name],
+              case_sensitive: true, scope: [:titi, :toto],
+            )
+          ),
+          RescueFromDuplicate::Rescuer.new(:name, scope: [:hello])
+        ])
+      }
+
+      it 'returns the missing indexes' do
+        missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
+        expect(missing_unique_indexes).not_to be_empty
+
+        expect(missing_unique_indexes.first.model).to eq described_class
+        expect(missing_unique_indexes.last.model).to eq described_class
+
+        expect(missing_unique_indexes.first.attributes).to eq [:name]
+        expect(missing_unique_indexes.last.attributes).to eq [:name]
+
+        expect(missing_unique_indexes.first.columns).to eq ["name", "titi", "toto"]
+        expect(missing_unique_indexes.last.columns).to eq ["hello", "name"]
+      end
+    end
+  end
+end
+
 describe Sqlite3Model do
   it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'missing index finding'
 end
 
 if defined?(MysqlModel)
   describe MysqlModel do
     it_behaves_like 'a model with rescued uniqueness validator'
+    it_behaves_like 'missing index finding'
   end
 end
 
 if defined?(PostgresqlModel)
   describe PostgresqlModel do
     it_behaves_like 'a model with rescued uniqueness validator'
+    it_behaves_like 'missing index finding'
   end
 end
