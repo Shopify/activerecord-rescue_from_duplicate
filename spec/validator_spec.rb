@@ -49,7 +49,7 @@ shared_examples 'missing index finding' do
   describe do
     context 'all indexes are satisfied' do
       it 'returns an empty array' do
-        expect(RescueFromDuplicate.missing_indexes).to be_empty
+        expect(RescueFromDuplicate.missing_unique_indexes).to be_empty
       end
     end
 
@@ -67,17 +67,17 @@ shared_examples 'missing index finding' do
       }
 
       it 'returns the missing indexes' do
-        missing_indexes = RescueFromDuplicate.missing_indexes.select { |mi| mi.model == described_class }
-        expect(missing_indexes).not_to be_empty
+        missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
+        expect(missing_unique_indexes).not_to be_empty
 
-        expect(missing_indexes.first.model).to eq described_class
-        expect(missing_indexes.last.model).to eq described_class
+        expect(missing_unique_indexes.first.model).to eq described_class
+        expect(missing_unique_indexes.last.model).to eq described_class
 
-        expect(missing_indexes.first.attributes).to eq [:name]
-        expect(missing_indexes.last.attributes).to eq [:name]
+        expect(missing_unique_indexes.first.attributes).to eq [:name]
+        expect(missing_unique_indexes.last.attributes).to eq [:name]
 
-        expect(missing_indexes.first.columns).to eq ["name", "titi", "toto"]
-        expect(missing_indexes.last.columns).to eq ["hello", "name"]
+        expect(missing_unique_indexes.first.columns).to eq ["name", "titi", "toto"]
+        expect(missing_unique_indexes.last.columns).to eq ["hello", "name"]
       end
     end
   end

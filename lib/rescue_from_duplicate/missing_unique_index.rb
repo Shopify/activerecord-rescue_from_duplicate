@@ -1,5 +1,5 @@
 module RescueFromDuplicate
-  class MissingIndex
+  class MissingUniqueIndex
     attr_reader :model, :attributes, :columns
 
     def initialize(model, attributes, columns)
