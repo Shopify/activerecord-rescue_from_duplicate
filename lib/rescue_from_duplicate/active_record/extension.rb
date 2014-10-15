@@ -54,7 +54,7 @@ module RescueFromDuplicate::ActiveRecord
         postgresql_exception_columns(exception)
       else
         other_exception_columns(exception)
-      end
+      end.sort
     end
 
     def postgresql_exception_columns(exception)
@@ -67,13 +67,12 @@ module RescueFromDuplicate::ActiveRecord
 
     def extract_columns(columns_string)
       return unless columns_string
-      columns_string.split(",").map(&:strip).sort
+      columns_string.split(",").map(&:strip)
     end
 
     def other_exception_columns(exception)
       indexes = self.class.connection.indexes(self.class.table_name)
-      columns = indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
-      columns.sort
+      indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
     end
   end
 end
