@@ -6,6 +6,7 @@ gemfile:
   - spec/gemfiles/Gemfile.ar-3.2
   - spec/gemfiles/Gemfile.ar-4.0
   - spec/gemfiles/Gemfile.ar-4.1
+  - spec/gemfiles/Gemfile.ar-4.2
   - spec/gemfiles/Gemfile.ar-edge
 
 before_script:
