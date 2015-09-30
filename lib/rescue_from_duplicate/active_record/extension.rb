@@ -24,22 +24,28 @@ module RescueFromDuplicate::ActiveRecord
 
     def create_or_update(*params, &block)
       super
-    rescue ActiveRecord::RecordNotUnique => exception
-      handler = exception_handler(exception)
-
-      raise exception unless handler
-
-      attribute = handler.attributes.first
-      options = handler.options.except(:case_sensitive, :scope).merge(value: self.send(:read_attribute_for_validation, attribute))
-
-      self.errors.add(attribute, :taken, options)
+    rescue ActiveRecord::RecordNotUnique, ActiveRecord::StatementInvalid => exception
+      raise unless handle_unicity_error(exception)
       false
     end
 
     private
 
+    def handle_unicity_error(exception)
+      handler = exception_handler(exception)
+      return false unless handler
+
+      attribute = handler.attributes.first
+      options = handler.options.except(:case_sensitive, :scope).merge(value: self.send(:read_attribute_for_validation, attribute))
+
+      self.errors.add(attribute, :taken, options)
+      true
+    end
+
     def exception_handler(exception)
       columns = exception_columns(exception)
+      return unless columns
+      columns.sort!
 
       self.class._rescue_from_duplicate_handlers.detect do |handler|
         handler.rescue? && columns == handler.columns
@@ -47,14 +53,13 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def exception_columns(exception)
-      case
-      when exception.message =~ /SQLite3::ConstraintException/
+      if exception.message =~ /SQLite3::ConstraintException/
         sqlite3_exception_columns(exception)
-      when exception.message =~ /PG::UniqueViolation/
+      elsif exception.message =~ /PG::UniqueViolation/
         postgresql_exception_columns(exception)
       else
         other_exception_columns(exception)
-      end.sort
+      end
     end
 
     def postgresql_exception_columns(exception)
@@ -62,12 +67,13 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def sqlite3_exception_columns(exception)
-      extract_columns(exception.message[/columns? (.*) (?:is|are) not unique/, 1])
+      extract_columns(exception.message[/columns? (.*) (?:is|are) not unique/, 1]) || 
+      extract_columns(exception.message[/UNIQUE constraint failed: ([^:]*)\:/, 1])
     end
 
     def extract_columns(columns_string)
       return unless columns_string
-      columns_string.split(",").map(&:strip)
+      columns_string.split(",").map { |column| column.split('.').last.strip }
     end
 
     def other_exception_columns(exception)
