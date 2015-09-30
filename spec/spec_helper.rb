@@ -15,8 +15,6 @@ begin
 rescue LoadError
 end
 
-
-
 module RescueFromDuplicate
   class Base
     cattr_accessor :exception

@@ -1,12 +1,14 @@
+sudo: false
 rvm:
-  - 1.9.3
-  - 2.0.0
-  - 2.1.2
+  - 2.0
+  - 2.1
+  - 2.2
 gemfile:
-  - spec/gemfiles/Gemfile.ar-3.2
-  - spec/gemfiles/Gemfile.ar-4.0
-  - spec/gemfiles/Gemfile.ar-4.1
-  - spec/gemfiles/Gemfile.ar-edge
+  - gemfiles/Gemfile.ar-3.2
+  - gemfiles/Gemfile.ar-4.0
+  - gemfiles/Gemfile.ar-4.1
+  - gemfiles/Gemfile.ar-4.2
+  - gemfiles/Gemfile.ar-edge
 
 before_script:
   - mysql -e 'create database rescue_from_duplicate;'

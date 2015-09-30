@@ -1,4 +1,4 @@
-require "bundler/gem_tasks"
+require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 
 RSpec::Core::RakeTask.new(:spec)
@@ -7,14 +7,11 @@ task :default => :spec
 
 namespace :spec do
   task :all do
-    %w(3.2 4.0 4.1 edge).each do |ar_version|
-      system(
-        {
-          "BUNDLE_GEMFILE" => "spec/gemfiles/Gemfile.ar-#{ar_version}",
-          "MYSQL" => "1"
-        },
-        "rspec"
-      )
+    Dir[File.expand_path('../gemfiles/*.lock', __FILE__)].each { |f| File.delete(f) }
+    Dir[File.expand_path('../gemfiles/*', __FILE__)].each do |gemfile|
+      env = {'BUNDLE_GEMFILE' => gemfile, 'MYSQL' => '1'}
+      system(env, 'bundle install')
+      system(env, 'bundle exec rspec')
     end
   end
 end
