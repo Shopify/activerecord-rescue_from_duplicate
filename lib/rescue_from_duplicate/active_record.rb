@@ -7,8 +7,7 @@ module RescueFromDuplicate
   end
 
   def self.missing_unique_indexes
-    ar_subclasses = ObjectSpace.each_object(Class).select{ |klass| klass < ::ActiveRecord::Base }
-    klasses = ar_subclasses.select do |klass|
+    klasses = ::ActiveRecord::Base.descendants.select do |klass|
       klass.validators.any? { |v| v.is_a?(::ActiveRecord::Validations::UniquenessValidator) || klass._rescue_from_duplicates.any? }
     end
 
