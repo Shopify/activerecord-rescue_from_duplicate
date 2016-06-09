@@ -1,8 +1,8 @@
 sudo: false
 rvm:
-  - 2.0
   - 2.1
   - 2.2
+  - 2.3.1
 gemfile:
   - gemfiles/Gemfile.ar-3.2
   - gemfiles/Gemfile.ar-4.0
