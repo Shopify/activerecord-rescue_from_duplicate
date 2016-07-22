@@ -15,6 +15,7 @@ module RescueFromDuplicate
 
     klasses.each do |klass|
       klass._rescue_from_duplicate_handlers.each do |handler|
+        next unless klass.connection.table_exists?(klass.table_name)
         unique_indexes = klass.connection.indexes(klass.table_name).select(&:unique)
 
         unless unique_indexes.any? { |index| index.columns.map(&:to_s).sort == handler.columns }
