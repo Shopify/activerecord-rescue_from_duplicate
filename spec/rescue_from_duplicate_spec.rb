@@ -2,16 +2,16 @@ require 'spec_helper'
 include RescueFromDuplicate
 
 shared_examples 'database error rescuing' do
-  let(:uniqueness_exception) { ::ActiveRecord::RecordNotUnique.new(message, nil) }
+  let(:uniqueness_exception) { ::ActiveRecord::RecordNotUnique.new(message) }
 
   subject { Rescuable.new }
 
   before do
-    allow(Rescuable).to receive(:connection).and_return(double(indexes: [Rescuable.index]))
+    allow(Rescuable).to(receive(:connection).and_return(double(indexes: [Rescuable.index])))
   end
 
   describe "#create_or_update when the validation fails" do
-    before { Base.stub(exception: uniqueness_exception) }
+    before { allow(Base).to(receive(:exception).and_return(uniqueness_exception)) }
 
     context "when the validator is present" do
       it "adds an error to the model" do
@@ -21,19 +21,19 @@ shared_examples 'database error rescuing' do
     end
 
     context "when the validator is not present" do
-      before { Rescuable.stub(validators: [Rescuable.presence_validator]) }
+      before { allow(Rescuable).to(receive(:validators).and_return([Rescuable.presence_validator])) }
 
       it "raises an exception" do
-        expect{ subject.create_or_update }.to raise_error(ActiveRecord::RecordNotUnique)
+        expect { subject.create_or_update }.to raise_error(ActiveRecord::RecordNotUnique)
       end
     end
   end
 
   describe "#create_or_update when using rescuer without validation" do
     before {
-      Rescuable.stub(_validators: {})
-      Rescuable.stub(_rescue_from_duplicates: [Rescuable.uniqueness_rescuer])
-      Base.stub(exception: uniqueness_exception)
+      allow(Rescuable).to(receive(:_validators).and_return({}))
+      allow(Rescuable).to(receive(:_rescue_from_duplicates).and_return([Rescuable.uniqueness_rescuer]))
+      allow(Base).to(receive(:exception).and_return(uniqueness_exception))
     }
 
     it "adds an error to the model" do
