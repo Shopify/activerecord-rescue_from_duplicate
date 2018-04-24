@@ -89,16 +89,12 @@ describe Sqlite3Model do
   it_behaves_like 'missing index finding'
 end
 
-if defined?(MysqlModel)
-  describe MysqlModel do
-    it_behaves_like 'a model with rescued uniqueness validator'
-    it_behaves_like 'missing index finding'
-  end
+describe MysqlModel do
+  it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'missing index finding'
 end
 
-if defined?(PostgresqlModel)
-  describe PostgresqlModel do
-    it_behaves_like 'a model with rescued uniqueness validator'
-    it_behaves_like 'missing index finding'
-  end
+describe PostgresqlModel do
+  it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'missing index finding'
 end

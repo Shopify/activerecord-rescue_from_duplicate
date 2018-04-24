@@ -9,7 +9,7 @@ namespace :spec do
   task :all do
     Dir[File.expand_path('../gemfiles/*.lock', __FILE__)].each { |f| File.delete(f) }
     Dir[File.expand_path('../gemfiles/*', __FILE__)].each do |gemfile|
-      env = {'BUNDLE_GEMFILE' => gemfile, 'MYSQL' => '1'}
+      env = { 'BUNDLE_GEMFILE' => gemfile }
       system(env, 'bundle install')
       system(env, 'bundle exec rspec')
     end

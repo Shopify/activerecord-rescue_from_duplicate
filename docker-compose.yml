@@ -1,0 +1,18 @@
+mysql:
+  image: mysql:5.7
+  environment:
+    MYSQL_USER: "test"
+    MYSQL_PASSWORD: "test"
+    MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+    MYSQL_DATABASE: "rescue_from_duplicate"
+  ports:
+    - "29291:3306"
+
+postgres:
+  image: postgres:10.3
+  environment:
+    POSTGRES_USER: "test"
+    POSTGRES_PASSWORD: "test"
+    POSTGRES_DB: "rescue_from_duplicate"
+  ports:
+    - "29292:5432"

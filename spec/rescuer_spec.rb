@@ -35,14 +35,10 @@ describe Sqlite3Model do
   it_behaves_like 'a model with rescued unique error without validator'
 end
 
-if defined?(MysqlModel)
-  describe MysqlModel do
-    it_behaves_like 'a model with rescued unique error without validator'
-  end
+describe MysqlModel do
+  it_behaves_like 'a model with rescued unique error without validator'
 end
 
-if defined?(PostgresqlModel)
-  describe PostgresqlModel do
-    it_behaves_like 'a model with rescued unique error without validator'
-  end
+describe PostgresqlModel do
+  it_behaves_like 'a model with rescued unique error without validator'
 end

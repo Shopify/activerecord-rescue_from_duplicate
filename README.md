@@ -69,6 +69,21 @@ And then execute:
 Or install it yourself as:
 
     $ gem install activerecord-rescue_from_duplicate
+    
+## Development Setup
+
+Install:
+
+- Have Docker installed
+- Clone the repo
+- `docker-compose up -d`
+
+Run tests:
+
+```
+rspec
+```
+
 
 ## Contributing
 
