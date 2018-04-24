@@ -3,5 +3,13 @@ rvm:
   - 2.5.0
 
 env:
-  - POSTGRES=1 MYSQL=1
+  - DOCKER_COMPOSE_VERSION=1.20.1
+
+before_script:
+  - docker-compose --version
+  - docker-compose pull
+  - docker-compose build
+  - docker-compose up --no-start
+  - docker-compose start
+  - docker ps
 
