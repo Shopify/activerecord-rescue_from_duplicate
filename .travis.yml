@@ -1,18 +1,7 @@
 sudo: false
 rvm:
   - 2.5.0
-gemfile:
-  - gemfiles/Gemfile.ar-4.2
-  - gemfiles/Gemfile.ar-5.2
-  - gemfiles/Gemfile.ar-edge
-
-before_script:
-  - mysql -e 'create database rescue_from_duplicate;'
-  - psql -c 'create database rescue_from_duplicate;' -U postgres
 
 env:
   - POSTGRES=1 MYSQL=1
 
-matrix:
-  allow_failures:
-    - gemfile: gemfiles/Gemfile.ar-edge
