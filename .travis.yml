@@ -11,5 +11,6 @@ before_script:
   - docker-compose build
   - docker-compose up --no-start
   - docker-compose start
+  - sleep 30 # Wait for databases to come online
   - docker ps
 
