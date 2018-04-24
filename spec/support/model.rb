@@ -11,8 +11,7 @@ ActiveRecord::Base.configurations = {
   'test_postgresql' => {adapter: 'postgresql', database: 'rescue_from_duplicate', username: 'postgres'},
   'test_mysql' => {adapter: 'mysql2', database: 'rescue_from_duplicate', username: 'travis'},
 }
-
-class CreateAllTables < ActiveRecord::Migration
+class CreateAllTables < ActiveRecord::Migration[5.2]
   def self.recreate_table(name, *args, &block)
     execute "drop table if exists #{name}"
 
@@ -50,13 +49,11 @@ CreateAllTables.up
 
 
 module TestModel
-  extend ActiveSupport::Concern
+  def self.included(base)
+    base.rescue_from_duplicate(:handle, scope: :relation_id, message: "handle must be unique for this relation")
 
-  included do
-    rescue_from_duplicate :handle, scope: :relation_id, message: "handle must be unique for this relation"
-
-    validates_uniqueness_of :name, rescue_from_duplicate: true, allow_nil: true
-    validates_uniqueness_of :size, allow_nil: true
+    base.validates(:name, uniqueness: { rescue_from_duplicate: true }, allow_nil: true)
+    base.validates(:size, uniqueness: { rescue_from_duplicate: true }, allow_nil: true)
   end
 end
 

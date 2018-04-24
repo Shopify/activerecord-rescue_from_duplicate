@@ -1,13 +1,9 @@
 sudo: false
 rvm:
-  - 2.1
-  - 2.2
-  - 2.3.1
+  - 2.5.0
 gemfile:
-  - gemfiles/Gemfile.ar-3.2
-  - gemfiles/Gemfile.ar-4.0
-  - gemfiles/Gemfile.ar-4.1
   - gemfiles/Gemfile.ar-4.2
+  - gemfiles/Gemfile.ar-5.2
   - gemfiles/Gemfile.ar-edge
 
 before_script:
