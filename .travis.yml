@@ -1,22 +1,16 @@
 sudo: false
 rvm:
-  - 2.1
-  - 2.2
-  - 2.3.1
-gemfile:
-  - gemfiles/Gemfile.ar-3.2
-  - gemfiles/Gemfile.ar-4.0
-  - gemfiles/Gemfile.ar-4.1
-  - gemfiles/Gemfile.ar-4.2
-  - gemfiles/Gemfile.ar-edge
-
-before_script:
-  - mysql -e 'create database rescue_from_duplicate;'
-  - psql -c 'create database rescue_from_duplicate;' -U postgres
+  - 2.5.0
 
 env:
-  - POSTGRES=1 MYSQL=1
+  - DOCKER_COMPOSE_VERSION=1.20.1
 
-matrix:
-  allow_failures:
-    - gemfile: gemfiles/Gemfile.ar-edge
+before_script:
+  - docker-compose --version
+  - docker-compose pull
+  - docker-compose build
+  - docker-compose up --no-start
+  - docker-compose start
+  - sleep 30 # Wait for databases to come online
+  - docker ps
+

@@ -5,7 +5,8 @@ shared_examples 'a model with rescued uniqueness validator' do
     context 'when catching a race condition' do
 
       before(:each) {
-        ActiveRecord::Validations::UniquenessValidator.any_instance.stub(validate_each: nil)
+        allow_any_instance_of(ActiveRecord::Validations::UniquenessValidator)
+          .to(receive(:validate_each)).and_return(nil)
         described_class.create!(name: 'toto', size: 5)
       }
 
@@ -55,7 +56,7 @@ shared_examples 'missing index finding' do
 
     context 'indexes are missing' do
       before {
-        described_class.stub(_rescue_from_duplicate_handlers: [
+        allow(described_class).to(receive(:_rescue_from_duplicate_handlers).and_return([
           RescueFromDuplicate::UniquenessRescuer.new(
             ::ActiveRecord::Validations::UniquenessValidator.new(
               attributes: [:name],
@@ -63,7 +64,7 @@ shared_examples 'missing index finding' do
             )
           ),
           RescueFromDuplicate::Rescuer.new(:name, scope: [:hello])
-        ])
+        ]))
       }
 
       it 'returns the missing indexes' do
@@ -88,16 +89,12 @@ describe Sqlite3Model do
   it_behaves_like 'missing index finding'
 end
 
-if defined?(MysqlModel)
-  describe MysqlModel do
-    it_behaves_like 'a model with rescued uniqueness validator'
-    it_behaves_like 'missing index finding'
-  end
+describe MysqlModel do
+  it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'missing index finding'
 end
 
-if defined?(PostgresqlModel)
-  describe PostgresqlModel do
-    it_behaves_like 'a model with rescued uniqueness validator'
-    it_behaves_like 'missing index finding'
-  end
+describe PostgresqlModel do
+  it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'missing index finding'
 end

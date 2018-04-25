@@ -83,8 +83,6 @@ module RescueFromDuplicate
         "index_rescuable_on_shop_id_and_type_and_name",
         true,
         ["shop_id", "type", "name"],
-        [nil, nil, nil],
-        nil
       )
     end
   end
