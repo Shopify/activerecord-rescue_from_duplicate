@@ -46,6 +46,43 @@ shared_examples 'a model with rescued uniqueness validator' do
   end
 end
 
+shared_examples 'a model whose child has a rescued uniquenes validator' do
+  describe 'save' do
+    before(:all) {
+      # Reset DB state
+      Employee.delete_all
+      Company.delete_all
+
+      # Set up models
+      emp1 = Employee.new(:name => "Bob")
+      emp2 = Employee.new(:name => "Bob")
+      @comp = Company.new()
+      @comp.employees << emp1 << emp2
+      @result = @comp.save
+    }
+
+    it "returns false" do
+      expect(@result).to eq false
+    end
+
+    it "does not save the company" do
+      expect(Company.count).to eq 0
+    end
+
+    it "does not save the employees" do
+      expect(Employee.count).to eq 0
+    end
+
+    it "has errors" do
+      expect(@comp.errors).not_to be_empty
+    end
+
+    it "has a specific error" do
+      expect(@comp.errors[:employees]).to eq "TODO"
+    end
+  end
+end
+
 shared_examples 'missing index finding' do
   describe do
     context 'all indexes are satisfied' do
@@ -86,15 +123,18 @@ end
 
 describe Sqlite3Model do
   it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'a model whose child has a rescued uniquenes validator'
   it_behaves_like 'missing index finding'
 end
 
 describe MysqlModel do
   it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'a model whose child has a rescued uniquenes validator'
   it_behaves_like 'missing index finding'
 end
 
 describe PostgresqlModel do
   it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'a model whose child has a rescued uniquenes validator'
   it_behaves_like 'missing index finding'
 end

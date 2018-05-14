@@ -39,6 +39,27 @@ class CreateAllTables < ActiveRecord::Migration[5.2]
     add_index name, [:relation_id, :handle], unique: true
     add_index name, :name, unique: true
     add_index name, :size, unique: true
+
+    execute "drop table if exists clients"
+    execute "drop table if exists employees"
+    execute "drop table if exists companies"
+
+    create_table :companies do |t|
+    end
+
+    create_table :employees do |t|
+      t.string :name
+      t.references :company, foreign_key: true
+    end
+
+    add_index :employees, :name, unique: true
+
+    create_table :clients do |t|
+      t.string :address
+      t.references :employee, foreign_key: true
+    end
+
+    add_index :clients, :address, unique: true
   end
 
   def self.up

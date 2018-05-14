@@ -86,6 +86,19 @@ module RescueFromDuplicate
       )
     end
   end
+
+  class Company < ::ActiveRecord::Base
+    has_many(:employees)
+  end
+
+  class Employee < ::ActiveRecord::Base
+    validates_uniqueness_of :name, rescue_from_duplicate: true
+    has_many(:clients)
+  end
+
+  class Client < ::ActiveRecord::Base
+    validates_uniqueness_of :address, rescue_from_duplicate: true
+  end
 end
 
 I18n.t(:prime)
