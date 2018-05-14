@@ -40,7 +40,7 @@ class CreateAllTables < ActiveRecord::Migration[5.2]
     add_index name, :name, unique: true
     add_index name, :size, unique: true
 
-    # Tables for parent-shild tests
+    # Tables for parent-child tests
     execute "drop table if exists clients"
     execute "drop table if exists employees"
     execute "drop table if exists companies"
