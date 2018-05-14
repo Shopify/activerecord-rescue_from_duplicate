@@ -40,6 +40,7 @@ class CreateAllTables < ActiveRecord::Migration[5.2]
     add_index name, :name, unique: true
     add_index name, :size, unique: true
 
+    # Tables for parent-shild tests
     execute "drop table if exists clients"
     execute "drop table if exists employees"
     execute "drop table if exists companies"
@@ -60,6 +61,24 @@ class CreateAllTables < ActiveRecord::Migration[5.2]
     end
 
     add_index :clients, :address, unique: true
+
+    # Tables for many-to-many tests
+    execute "drop table if exists memberships"
+    execute "drop table if exists items"
+    execute "drop table if exists subsets"
+
+    create_table :items do |t|
+    end
+
+    create_table :subsets do |t|
+    end
+
+    create_table :memberships do |t|
+      t.references :item, foreign_key: true
+      t.references :subset, foreign_key: true
+    end
+
+    add_index :memberships, [:item_id, :subset_id], unique: true
   end
 
   def self.up
