@@ -1,5 +1,27 @@
 require 'spec_helper'
 
+shared_examples 'a model with a child with rescued uniqueness validator' do
+  before(:each) {
+    @parent = described_class.create!(name: 'toto', size: 5)
+  }
+
+  it 'raises when using save! on the parent' do
+    @parent.children.create!(name: 'foo')
+    @parent.children.build(name: 'foo')
+    expect {
+      @parent.save!
+    }.to raise_error(ActiveRecord::RecordNotSaved)
+  end
+
+  it 'returns false when using save on the parent' do
+    @parent.children.create!(name: 'foo')
+    @parent.children.build(name: 'foo')
+    expect {
+      @parent.save
+    }.to be(false)
+  end
+end
+
 shared_examples 'a model with rescued uniqueness validator' do
   describe 'create!' do
     context 'when catching a race condition' do
@@ -87,14 +109,17 @@ end
 describe Sqlite3Model do
   it_behaves_like 'a model with rescued uniqueness validator'
   it_behaves_like 'missing index finding'
+  it_behaves_like 'a model with a child with rescued uniqueness validator'
 end
 
 describe MysqlModel do
   it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'a model with a child with rescued uniqueness validator'
   it_behaves_like 'missing index finding'
 end
 
 describe PostgresqlModel do
   it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'a model with a child with rescued uniqueness validator'
   it_behaves_like 'missing index finding'
 end
