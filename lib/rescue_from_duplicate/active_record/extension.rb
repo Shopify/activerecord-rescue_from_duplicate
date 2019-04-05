@@ -45,7 +45,7 @@ module RescueFromDuplicate::ActiveRecord
     def exception_handler(exception)
       columns = exception_columns(exception)
       return unless columns
-      columns.sort!
+      columns = columns.sort
 
       self.class._rescue_from_duplicate_handlers.detect do |handler|
         handler.rescue? && columns == handler.columns
