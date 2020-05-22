@@ -22,7 +22,7 @@ module RescueFromDuplicate::ActiveRecord
       self._rescue_from_duplicates = []
     end
 
-    def create_or_update(*params, &block)
+    def create_or_update(*, **)
       super
     rescue ActiveRecord::RecordNotUnique, ActiveRecord::StatementInvalid => exception
       raise unless handle_unicity_error(exception)
