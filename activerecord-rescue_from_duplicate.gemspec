@@ -28,4 +28,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "pg"
   spec.add_development_dependency "pry"
+
+  spec.metadata['allowed_push_host'] = "https://rubygems.org"
 end
