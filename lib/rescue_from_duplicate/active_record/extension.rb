@@ -68,7 +68,8 @@ module RescueFromDuplicate::ActiveRecord
 
     def sqlite3_exception_columns(exception)
       extract_columns(exception.message[/columns? (.*) (?:is|are) not unique/, 1]) || 
-      extract_columns(exception.message[/UNIQUE constraint failed: ([^:]*)\:/, 1])
+      extract_columns(exception.message[/UNIQUE constraint failed: ([^:]*)\:?/, 1])
+      
     end
 
     def extract_columns(columns_string)

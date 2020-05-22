@@ -61,7 +61,7 @@ module TestModel
   def self.included(base)
     base.rescue_from_duplicate(:handle, scope: :relation_id, message: "handle must be unique for this relation")
 
-    base.validates(:name, uniqueness: { rescue_from_duplicate: true }, allow_nil: true)
+    base.validates(:name, uniqueness: { rescue_from_duplicate: true, case_sensitive: true }, allow_nil: true)
     base.validates(:size, uniqueness: { rescue_from_duplicate: true }, allow_nil: true)
   end
 end
