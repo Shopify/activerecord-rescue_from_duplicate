@@ -30,8 +30,8 @@ module RescueFromDuplicate
     include ActiveModel::AttributeMethods
     include RescueFromDuplicate::ActiveRecord::Extension
 
-    define_attribute_methods ['name']
-    attr_accessor :name
+    define_attribute_methods ['name', 'key']
+    attr_accessor :name, :key
 
     def self.table_name
       "rescuable"
@@ -48,6 +48,7 @@ module RescueFromDuplicate
     def self.validators
       @validators ||= [
         uniqueness_validator,
+        cpk_uniqueness_validator,
         presence_validator
       ]
     end
@@ -56,6 +57,14 @@ module RescueFromDuplicate
       @uniqueness_validator ||= ::ActiveRecord::Validations::UniquenessValidator.new(
         attributes: [:name],
         case_sensitive: true, scope: [:type, :shop_id],
+        rescue_from_duplicate: true
+      ).tap { |o| o.setup(self) if o.respond_to?(:setup) }
+    end
+
+    def self.cpk_uniqueness_validator
+      @cpk_uniqueness_validator ||= ::ActiveRecord::Validations::UniquenessValidator.new(
+        attributes: [:key],
+        case_sensitive: true, scope: [:namespace],
         rescue_from_duplicate: true
       ).tap { |o| o.setup(self) if o.respond_to?(:setup) }
     end
@@ -70,6 +79,12 @@ module RescueFromDuplicate
     def self.uniqueness_rescuer
       @uniqueness_rescuer ||= RescueFromDuplicate::Rescuer.new(
         :name, scope: [:shop_id, :type], message: "is not unique by type and shop id"
+      )
+    end
+
+    def self.cpk_uniqueness_rescuer
+      @cpk_uniqueness_rescuer ||= RescueFromDuplicate::Rescuer.new(
+        :key, scope: [:namespace], message: "key must be unique within namespace"
       )
     end
 

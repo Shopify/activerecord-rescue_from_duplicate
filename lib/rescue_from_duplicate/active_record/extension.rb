@@ -77,7 +77,7 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def other_exception_columns(exception)
-      indexes = self.class.connection.indexes(self.class.table_name)
+      indexes = RescueFromDuplicate.indexes_for_class(self.class)
       indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
     end
   end

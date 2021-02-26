@@ -16,7 +16,7 @@ module RescueFromDuplicate
     klasses.each do |klass|
       klass._rescue_from_duplicate_handlers.each do |handler|
         next unless klass.connection.table_exists?(klass.table_name)
-        unique_indexes = klass.connection.indexes(klass.table_name).select(&:unique)
+        unique_indexes = indexes_for_class(klass).select(&:unique)
 
         unless unique_indexes.any? { |index| index.columns.map(&:to_s).sort == handler.columns }
           missing_unique_indexes << MissingUniqueIndex.new(klass, handler.attributes, handler.columns)
@@ -24,6 +24,17 @@ module RescueFromDuplicate
       end
     end
     missing_unique_indexes
+  end
+
+  def self.indexes_for_class(klass)
+    klass.connection.indexes(klass.table_name).append(
+      ::ActiveRecord::ConnectionAdapters::IndexDefinition.new(
+        klass.table_name,
+        'PRIMARY',
+        true,
+        klass.connection.primary_keys(klass.table_name)
+      )
+    )
   end
 end
 
