@@ -7,17 +7,17 @@ shared_examples 'a model with rescued uniqueness validator' do
       before(:each) {
         allow_any_instance_of(ActiveRecord::Validations::UniquenessValidator)
           .to(receive(:validate_each)).and_return(nil)
-        described_class.create!(name: 'toto', size: 5)
+        described_class.create!(existing_row_params)
       }
 
       it 'raises an ActiveRecord::RecordNotSaved error' do
-        expect{ described_class.create!(name: 'toto') }.to raise_error(ActiveRecord::RecordNotSaved)
+        expect{ described_class.create!(conflicting_row_params) }.to raise_error(ActiveRecord::RecordNotSaved)
       end
 
       it "doesn't save the record" do
         expect{
           begin
-            described_class.create!(name: 'toto')
+            described_class.create!(conflicting_row_params)
           rescue ActiveRecord::RecordNotSaved
             # NOOP
           end
@@ -28,8 +28,8 @@ shared_examples 'a model with rescued uniqueness validator' do
         expect {
           begin
             described_class.transaction do
-              described_class.create(name: 'not toto', size: 55)
-              described_class.create!(name: 'toto')
+              described_class.create(non_conflicting_row_params)
+              described_class.create!(conflicting_row_params)
             end
           rescue ActiveRecord::RecordNotSaved
             # NOOP
@@ -40,7 +40,7 @@ shared_examples 'a model with rescued uniqueness validator' do
 
     context "with no race condition" do
       it 'saves the model' do
-        expect{ described_class.create!(name: 'toto') }.to change(described_class, :count).by(1)
+        expect{ described_class.create!(conflicting_row_params) }.to change(described_class, :count).by(1)
       end
     end
   end
@@ -84,17 +84,44 @@ shared_examples 'missing index finding' do
   end
 end
 
-describe Sqlite3Model do
-  it_behaves_like 'a model with rescued uniqueness validator'
-  it_behaves_like 'missing index finding'
+context "unique key" do
+  let(:existing_row_params) { { name: 'toto', size: 5 } }
+  let(:conflicting_row_params) { { name: 'toto' } }
+  let(:non_conflicting_row_params) { { name: 'not toto', size: 55 } }
+
+  describe Sqlite3Model do
+    it_behaves_like 'a model with rescued uniqueness validator'
+    it_behaves_like 'missing index finding'
+  end
+
+  describe MysqlModel do
+    it_behaves_like 'a model with rescued uniqueness validator'
+    it_behaves_like 'missing index finding'
+  end
+
+  describe PostgresqlModel do
+    it_behaves_like 'a model with rescued uniqueness validator'
+    it_behaves_like 'missing index finding'
+  end
 end
 
-describe MysqlModel do
-  it_behaves_like 'a model with rescued uniqueness validator'
-  it_behaves_like 'missing index finding'
-end
+context "composite primary key" do
+  let(:existing_row_params) { { namespace: 'existing_namespace', key: 'existing_key' } }
+  let(:conflicting_row_params) { { namespace: 'existing_namespace', key: 'existing_key' } }
+  let(:non_conflicting_row_params) { { namespace: 'new_namespace', key: 'new_key' } }
 
-describe PostgresqlModel do
-  it_behaves_like 'a model with rescued uniqueness validator'
-  it_behaves_like 'missing index finding'
+  describe Sqlite3CpkModel do
+    it_behaves_like 'a model with rescued uniqueness validator'
+    it_behaves_like 'missing index finding'
+  end
+  
+  describe MysqlCpkModel do
+    it_behaves_like 'a model with rescued uniqueness validator'
+    it_behaves_like 'missing index finding'
+  end
+
+  describe PostgresqlCpkModel do
+    it_behaves_like 'a model with rescued uniqueness validator'
+    it_behaves_like 'missing index finding'
+  end
 end

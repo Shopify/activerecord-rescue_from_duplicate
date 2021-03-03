@@ -20,25 +20,49 @@ shared_examples 'a model with rescued unique error without validator' do
   describe 'create!' do
     context 'when catching a race condition' do
       before {
-        described_class.create!(relation_id: 1, handle: 'toto')
+        described_class.create!(params)
       }
 
       it 'adds an error on the model' do
-        model = described_class.create(relation_id: 1, handle: 'toto')
-        expect(model.errors[:handle]).to eq(["handle must be unique for this relation"])
+        model = described_class.create(params)
+        expect(model.errors[field]).to eq([error_message])
       end
     end
   end
 end
 
-describe Sqlite3Model do
-  it_behaves_like 'a model with rescued unique error without validator'
+context "unique key" do
+  let(:params) { { relation_id: 1, handle: 'toto' } }
+  let(:field) { :handle }
+  let(:error_message) { "handle must be unique for this relation" }
+
+  describe Sqlite3Model do
+    it_behaves_like 'a model with rescued unique error without validator'
+  end
+
+  describe MysqlModel do
+    it_behaves_like 'a model with rescued unique error without validator'
+  end
+
+  describe PostgresqlModel do
+    it_behaves_like 'a model with rescued unique error without validator'
+  end
 end
 
-describe MysqlModel do
-  it_behaves_like 'a model with rescued unique error without validator'
-end
+context "composite primary key" do
+  let(:params) { { namespace: 'test_namespace', key: 'test_key' } }
+  let(:field) { :key }
+  let(:error_message) { "must be unique within this namespace" }
 
-describe PostgresqlModel do
-  it_behaves_like 'a model with rescued unique error without validator'
+  describe Sqlite3CpkNoValidatorModel do
+    it_behaves_like 'a model with rescued unique error without validator'
+  end
+
+  describe MysqlCpkNoValidatorModel do
+    it_behaves_like 'a model with rescued unique error without validator'
+  end
+
+  describe PsqlCpkNoValidatorModel do
+    it_behaves_like 'a model with rescued unique error without validator'
+  end
 end
