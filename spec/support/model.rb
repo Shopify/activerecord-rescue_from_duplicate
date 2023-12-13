@@ -13,7 +13,7 @@ CONNECTIONS = {
     username: "test",
     password: "test",
     host: "127.0.0.1",
-    port: "29292",
+    port: "5432",
   },
   test_mysql: {
     adapter: "mysql2",
@@ -21,7 +21,7 @@ CONNECTIONS = {
     username: "test",
     password: "test",
     host: "127.0.0.1",
-    port: "29291",
+    port: "3306",
   },
 }
 class CreateAllTables < ActiveRecord::Migration[5.2]

@@ -1,0 +1,41 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Ruby ${{ matrix.ruby }}
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: "test"
+          POSTGRES_PASSWORD: "test"
+          POSTGRES_DB: "rescue_from_duplicate"
+        ports:
+          - "5432:5432"
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_USER: "test"
+          MYSQL_PASSWORD: "test"
+          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+          MYSQL_DATABASE: "rescue_from_duplicate"
+        ports:
+          - "3306:3306"
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["3.2"]
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+    - name: Set up Ruby ${{ matrix.ruby }}
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+        cache-version: 1
+    - name: Tests
+      run: bundle exec rake
