@@ -7,7 +7,8 @@ shared_examples 'database error rescuing' do
   subject { Rescuable.new }
 
   before do
-    allow(Rescuable).to(receive(:connection).and_return(double(indexes: [Rescuable.index])))
+    connection = double(schema_cache: double(indexes: [Rescuable.index]))
+    allow(Rescuable).to(receive(:connection).and_return(connection))
   end
 
   describe "#create_or_update when the validation fails" do
