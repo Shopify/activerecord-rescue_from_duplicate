@@ -26,6 +26,13 @@ shared_examples 'database error rescuing' do
       it "raises an exception" do
         expect { subject.create_or_update }.to raise_error(ActiveRecord::RecordNotUnique)
       end
+
+      it "doesn't parse the message" do
+        allow(uniqueness_exception).to(
+          receive(:message).and_raise(StandardError, "Message should not have been accessed")
+        )
+        expect { subject.create_or_update }.to raise_error(ActiveRecord::RecordNotUnique)
+      end
     end
   end
 
