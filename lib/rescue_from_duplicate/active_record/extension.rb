@@ -43,11 +43,14 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def exception_handler(exception)
+      handlers = self.class._rescue_from_duplicate_handlers
+      return if handlers.empty?
+
       columns = exception_columns(exception)
       return unless columns
       columns = columns.sort
 
-      self.class._rescue_from_duplicate_handlers.detect do |handler|
+      handlers.detect do |handler|
         handler.rescue? && columns == handler.columns
       end
     end
@@ -67,7 +70,7 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def sqlite3_exception_columns(exception)
-      extract_columns(exception.message[/columns? (.*) (?:is|are) not unique/, 1]) || 
+      extract_columns(exception.message[/columns? (.*) (?:is|are) not unique/, 1]) ||
       extract_columns(exception.message[/UNIQUE constraint failed: ([^:]*)\:?/, 1])
     end
 
