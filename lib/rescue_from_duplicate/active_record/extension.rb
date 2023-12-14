@@ -80,7 +80,7 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def other_exception_columns(exception)
-      indexes = self.class.connection.indexes(self.class.table_name)
+      indexes = self.class.connection.schema_cache.indexes(self.class.table_name)
       indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
     end
   end
