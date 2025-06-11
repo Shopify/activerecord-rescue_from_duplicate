@@ -39,6 +39,9 @@ class CreateAllTables < ActiveRecord::Migration[5.2]
     add_index name, [:relation_id, :handle], unique: true
     add_index name, :name, unique: true
     add_index name, :size, unique: true
+
+    # mimics case_sensitive: false
+    add_index name, "size, lower(name)", unique: true if name == :postgresql_models
   end
 
   def self.up
