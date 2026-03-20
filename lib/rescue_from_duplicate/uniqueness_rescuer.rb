@@ -16,6 +16,10 @@ module RescueFromDuplicate
       @validator.attributes
     end
 
+    def error_attribute
+      attributes.first
+    end
+
     def columns
       (Array(options[:scope]) + attributes).map(&:to_s).sort
     end

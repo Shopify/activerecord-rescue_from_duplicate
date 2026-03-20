@@ -14,6 +14,23 @@ describe RescueFromDuplicate::Rescuer do
   it "returns the options" do
     expect(subject.options).to eq scope: [:type, :shop_id], message: "Derp!"
   end
+
+  describe "#error_attribute" do
+    it "defaults to the declared attribute" do
+      rescuer = RescueFromDuplicate::Rescuer.new(:name_normalized, scope: [:shop_id])
+      expect(rescuer.error_attribute).to eq(:name_normalized)
+    end
+
+    it "returns the add_error_to attribute when provided" do
+      rescuer = RescueFromDuplicate::Rescuer.new(:name_normalized, scope: [:shop_id], add_error_to: :name)
+      expect(rescuer.error_attribute).to eq(:name)
+    end
+
+    it "strips add_error_to from options" do
+      rescuer = RescueFromDuplicate::Rescuer.new(:name_normalized, scope: [:shop_id], add_error_to: :name, message: "taken")
+      expect(rescuer.options).to eq(scope: [:shop_id], message: "taken")
+    end
+  end
 end
 
 shared_examples 'a model with rescued unique error without validator' do

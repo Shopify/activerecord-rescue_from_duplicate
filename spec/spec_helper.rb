@@ -30,8 +30,8 @@ module RescueFromDuplicate
     include ActiveModel::AttributeMethods
     include RescueFromDuplicate::ActiveRecord::Extension
 
-    define_attribute_methods ['name']
-    attr_accessor :name
+    define_attribute_methods ['name', 'name_normalized', 'size']
+    attr_accessor :name, :name_normalized, :size
 
     def self.table_name
       "rescuable"
@@ -73,6 +73,12 @@ module RescueFromDuplicate
       )
     end
 
+    def self.uniqueness_rescuer_with_add_error_to
+      @uniqueness_rescuer_with_add_error_to ||= RescueFromDuplicate::Rescuer.new(
+        :name_normalized, scope: [:shop_id, :type], add_error_to: :name, message: "is not unique"
+      )
+    end
+
     def self.presence_validator
       @presence_validator ||= ActiveModel::Validations::PresenceValidator.new(attributes: [:name])
     end
@@ -83,6 +89,15 @@ module RescueFromDuplicate
         "index_rescuable_on_shop_id_and_type_and_name",
         true,
         ["shop_id", "type", "name"],
+      )
+    end
+
+    def self.index_on_name_normalized
+      @index_on_name_normalized ||= ::ActiveRecord::ConnectionAdapters::IndexDefinition.new(
+        "rescuable",
+        "index_rescuable_on_shop_id_and_type_and_name_normalized",
+        true,
+        ["shop_id", "type", "name_normalized"],
       )
     end
   end

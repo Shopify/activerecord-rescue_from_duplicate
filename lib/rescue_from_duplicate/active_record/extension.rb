@@ -35,8 +35,8 @@ module RescueFromDuplicate::ActiveRecord
       handler = exception_handler(exception)
       return false unless handler
 
-      attribute = handler.attributes.first
-      options = handler.options.except(:case_sensitive, :scope).merge(value: self.send(:read_attribute_for_validation, attribute))
+      attribute = handler.error_attribute
+      options = handler.options.except(:case_sensitive, :scope).merge(value: read_attribute_for_validation(attribute))
 
       self.errors.add(attribute, :taken, **options)
       true
