@@ -74,6 +74,8 @@ GEM
     sqlite3 (1.7.3-x86_64-darwin)
     sqlite3 (1.7.3-x86_64-linux)
     timeout (0.4.3)
+    trilogy (2.12.4)
+      bigdecimal
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
 
@@ -95,6 +97,7 @@ DEPENDENCIES
   rspec
   simplecov
   sqlite3
+  trilogy
 
 BUNDLED WITH
    2.5.3
