@@ -2,6 +2,8 @@ require 'active_support/core_ext/class'
 
 module RescueFromDuplicate::ActiveRecord
   module Extension
+    DUPLICATE_KEY_REGEX = /for key ['"](?<key>[^'"]+)['"]/
+
     extend ActiveSupport::Concern
 
     module ClassMethods
@@ -80,8 +82,15 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def other_exception_columns(exception)
+      key = exception.message[DUPLICATE_KEY_REGEX, :key]
+      return [] unless key
+
+      # Mysql > 8.0 prefixes indexes with the table name.
+      index_name = key.delete_prefix("#{self.class.table_name}.")
+
       indexes = self.class.connection.schema_cache.indexes(self.class.table_name)
-      indexes.detect{ |i| exception.message.include?(i.name) }.try(:columns) || []
+      index = indexes.find { |i| i.name == index_name }
+      index ? index.columns : []
     end
   end
 end
