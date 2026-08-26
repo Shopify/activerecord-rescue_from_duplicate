@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    activerecord-rescue_from_duplicate (0.2.6)
+    activerecord-rescue_from_duplicate (0.2.7)
       activerecord (>= 7)
 
 GEM
