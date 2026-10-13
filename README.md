@@ -54,6 +54,29 @@ class ModelWithUniqueToken < ActiveRecord::Base
 end
 ```
 
+### PostgreSQL-compatible duplicate errors without DETAIL
+
+For PostgreSQL-compatible servers, including YugabyteDB YSQL, a unique violation
+may report a constraint name without the `DETAIL: Key (...)` column list. In that
+case, the gem matches the reported name exactly against the model table's schema
+cache indexes. Only a unique index with a non-empty list of columns can identify
+a configured handler; expression indexes and unknown names leave the original
+exception unhandled. When `DETAIL` is present, its column list still takes precedence.
+
+The fallback does not guess physical partition index names. Applications whose
+reported physical names differ from their schema cache names must provide their
+own exact mapping to the appropriate schema index and handler columns.
+
+A cold schema cache can query the database during this lookup. If that lookup
+raises `ActiveRecord::StatementInvalid` or `ActiveRecord::ConnectionNotEstablished`,
+the gem leaves the original duplicate exception unhandled rather than replacing
+it with the metadata error or adding a validation error.
+
+This is error classification, not transaction recovery: even when warm metadata
+allows the gem to add an error and return `false`, a PostgreSQL-compatible
+transaction aborted by the failed statement remains aborted. This fallback does
+not introduce savepoints or make subsequent database statements safe.
+
 ## Installation
 
 Add this line to your application's Gemfile:

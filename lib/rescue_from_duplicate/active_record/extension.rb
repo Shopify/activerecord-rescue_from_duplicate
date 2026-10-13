@@ -68,7 +68,22 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def postgresql_exception_columns(exception)
-      extract_columns(exception.message[/Key \((.*?)\)=\(.*?\) already exists./, 1])
+      extract_columns(exception.message[/Key \((.*?)\)=\(.*?\) already exists./, 1]) ||
+        postgresql_constraint_columns(exception)
+    end
+
+    def postgresql_constraint_columns(exception)
+      constraint_name = exception.message[/\APG::UniqueViolation:\s*(?:ERROR:\s*)?duplicate key value violates unique constraint "([^"\n]+)"(?:\n|\z)/, 1]
+      return unless constraint_name
+
+      indexes = self.class.connection.schema_cache.indexes(self.class.table_name)
+      index = indexes.find { |candidate| candidate.name == constraint_name }
+      return unless index && index.unique && index.columns.is_a?(Array) && !index.columns.empty?
+
+      index.columns
+    rescue ActiveRecord::StatementInvalid, ActiveRecord::ConnectionNotEstablished
+      # A cold cache may query a transaction already aborted by the original error.
+      nil
     end
 
     def sqlite3_exception_columns(exception)
