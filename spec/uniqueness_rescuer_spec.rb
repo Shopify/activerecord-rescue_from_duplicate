@@ -31,6 +31,7 @@ describe RescueFromDuplicate::UniquenessRescuer do
         attributes: [:name],
         scope: [:shop_id],
         rescue_from_duplicate: { index_name: ["index_rescuable_on_shop_id_and_name", "rescuable_pkey"] },
+        class: Rescuable,
       ).tap { |o| o.setup(Rescuable) if o.respond_to?(:setup) }
     end
     subject { RescueFromDuplicate::UniquenessRescuer.new(validator) }
