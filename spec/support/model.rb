@@ -23,6 +23,14 @@ CONNECTIONS = {
     host: "127.0.0.1",
     port: "3306",
   },
+  test_trilogy: {
+    adapter: "trilogy",
+    database: "rescue_from_duplicate",
+    username: "test",
+    password: "test",
+    host: "127.0.0.1",
+    port: "3306",
+  },
 }
 class CreateAllTables < ActiveRecord::Migration[5.2]
   def self.recreate_table(name, *args, &block)
