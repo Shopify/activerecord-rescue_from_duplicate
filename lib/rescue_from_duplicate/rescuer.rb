@@ -11,5 +11,9 @@ module RescueFromDuplicate
     def rescue?
       true
     end
+
+    def index_name
+      options[:index]&.to_s
+    end
   end
 end

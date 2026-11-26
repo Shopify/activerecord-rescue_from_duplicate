@@ -67,6 +67,24 @@ shared_examples 'missing index finding' do
         ]))
       }
 
+      it 'reports a handler whose named index does not exist' do
+        allow(described_class).to(receive(:_rescue_from_duplicate_handlers).and_return([
+          RescueFromDuplicate::Rescuer.new(:code, scope: :relation_id, index: "index_that_does_not_exist"),
+        ]))
+
+        missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
+        expect(missing_unique_indexes.map(&:columns)).to eq [["code", "relation_id"]]
+      end
+
+      it 'accepts a handler whose named index does not exist when a unique index has its columns' do
+        allow(described_class).to(receive(:_rescue_from_duplicate_handlers).and_return([
+          RescueFromDuplicate::Rescuer.new(:handle, scope: :relation_id, index: "index_that_does_not_exist"),
+        ]))
+
+        missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
+        expect(missing_unique_indexes).to be_empty
+      end
+
       it 'returns the missing indexes' do
         missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
         expect(missing_unique_indexes).not_to be_empty

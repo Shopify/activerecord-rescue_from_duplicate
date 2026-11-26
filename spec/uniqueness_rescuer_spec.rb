@@ -25,6 +25,33 @@ describe RescueFromDuplicate::UniquenessRescuer do
     end
   end
 
+  context "validator with rescue naming an index" do
+    let(:validator) do
+      ::ActiveRecord::Validations::UniquenessValidator.new(
+        attributes: [:name],
+        scope: [:shop_id],
+        rescue_from_duplicate: { index: "index_rescuable_on_shop_id_and_name" },
+      ).tap { |o| o.setup(Rescuable) if o.respond_to?(:setup) }
+    end
+    subject { RescueFromDuplicate::UniquenessRescuer.new(validator) }
+
+    it "rescues" do
+      expect(subject.rescue?).to be_truthy
+    end
+
+    it "returns the index name" do
+      expect(subject.index_name).to eq "index_rescuable_on_shop_id_and_name"
+    end
+  end
+
+  context "validator with rescue: true" do
+    subject { RescueFromDuplicate::UniquenessRescuer.new(Rescuable.uniqueness_validator) }
+
+    it "has no index name" do
+      expect(subject.index_name).to be_nil
+    end
+  end
+
   context "validator without rescue" do
     subject { RescueFromDuplicate::UniquenessRescuer.new(Rescuable.uniqueness_validator_without_rescue) }
     it "doesn't rescues" do

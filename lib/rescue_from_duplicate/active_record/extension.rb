@@ -38,7 +38,7 @@ module RescueFromDuplicate::ActiveRecord
       return false unless handler
 
       attribute = handler.attributes.first
-      options = handler.options.except(:case_sensitive, :scope).merge(value: self.send(:read_attribute_for_validation, attribute))
+      options = handler.options.except(:case_sensitive, :scope, :index).merge(value: self.send(:read_attribute_for_validation, attribute))
 
       self.errors.add(attribute, :taken, **options)
       true
@@ -48,6 +48,22 @@ module RescueFromDuplicate::ActiveRecord
       handlers = self.class._rescue_from_duplicate_handlers
       return if handlers.empty?
 
+      handler_for_index_name(handlers, exception) || handler_for_columns(handlers, exception)
+    end
+
+    def handler_for_index_name(handlers, exception)
+      named_handlers = handlers.select { |handler| handler.index_name }
+      return if named_handlers.empty?
+
+      index_name = exception_index_name(exception)
+      return unless index_name
+
+      named_handlers.detect do |handler|
+        handler.rescue? && handler.index_name == index_name
+      end
+    end
+
+    def handler_for_columns(handlers, exception)
       columns = exception_columns(exception)
       return unless columns
       columns = columns.sort
@@ -67,6 +83,30 @@ module RescueFromDuplicate::ActiveRecord
       end
     end
 
+    def exception_index_name(exception)
+      if exception.message =~ /SQLite3::ConstraintException/
+        nil # SQLite reports the columns, never the index name.
+      elsif exception.message =~ /PG::UniqueViolation/
+        postgresql_exception_index_name(exception)
+      else
+        other_exception_index_name(exception)
+      end
+    end
+
+    def postgresql_exception_index_name(exception)
+      result = exception.cause.result if exception.cause.respond_to?(:result)
+      index_name = result.error_field(PG::Constants::PG_DIAG_CONSTRAINT_NAME) if result && defined?(PG::Constants::PG_DIAG_CONSTRAINT_NAME)
+      index_name || exception.message[/unique constraint "([^"]+)"/, 1]
+    end
+
+    def other_exception_index_name(exception)
+      key = exception.message[DUPLICATE_KEY_REGEX, :key]
+      return unless key
+
+      # Mysql > 8.0 prefixes indexes with the table name.
+      key.delete_prefix("#{self.class.table_name}.")
+    end
+
     def postgresql_exception_columns(exception)
       extract_columns(exception.message[/Key \((.*?)\)=\(.*?\) already exists./, 1])
     end
@@ -82,11 +122,8 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def other_exception_columns(exception)
-      key = exception.message[DUPLICATE_KEY_REGEX, :key]
-      return [] unless key
-
-      # Mysql > 8.0 prefixes indexes with the table name.
-      index_name = key.delete_prefix("#{self.class.table_name}.")
+      index_name = other_exception_index_name(exception)
+      return [] unless index_name
 
       indexes = self.class.connection.schema_cache.indexes(self.class.table_name)
       index = indexes.find { |i| i.name == index_name }
