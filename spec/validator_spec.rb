@@ -61,6 +61,7 @@ shared_examples 'missing index finding' do
             ::ActiveRecord::Validations::UniquenessValidator.new(
               attributes: [:name],
               case_sensitive: true, scope: [:titi, :toto],
+              class: described_class,
             )
           ),
           RescueFromDuplicate::Rescuer.new(:name, scope: [:hello])
