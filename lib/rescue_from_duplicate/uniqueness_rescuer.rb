@@ -12,9 +12,11 @@ module RescueFromDuplicate
       @validator.options
     end
 
-    def index_name
+    def index_names
       rescue_options = options[:rescue_from_duplicate]
-      rescue_options[:index]&.to_s if rescue_options.is_a?(Hash)
+      return [] unless rescue_options.is_a?(Hash)
+
+      Array(rescue_options[:index_name]).map(&:to_s)
     end
 
     def attributes

@@ -15,13 +15,18 @@ describe RescueFromDuplicate::Rescuer do
     expect(subject.options).to eq scope: [:type, :shop_id], message: "Derp!"
   end
 
-  it "has no index name by default" do
-    expect(subject.index_name).to be_nil
+  it "has no index names by default" do
+    expect(subject.index_names).to eq []
   end
 
-  it "returns the index name from the index option" do
-    rescuer = RescueFromDuplicate::Rescuer.new(:name, scope: :shop_id, index: :index_rescuable_on_shop_id_and_name)
-    expect(rescuer.index_name).to eq "index_rescuable_on_shop_id_and_name"
+  it "returns the index name from the index_name option" do
+    rescuer = RescueFromDuplicate::Rescuer.new(:name, scope: :shop_id, index_name: :index_rescuable_on_shop_id_and_name)
+    expect(rescuer.index_names).to eq ["index_rescuable_on_shop_id_and_name"]
+  end
+
+  it "returns every index name from an array index_name option" do
+    rescuer = RescueFromDuplicate::Rescuer.new(:name, scope: :shop_id, index_name: ["index_rescuable_on_shop_id_and_name", "rescuable_pkey"])
+    expect(rescuer.index_names).to eq ["index_rescuable_on_shop_id_and_name", "rescuable_pkey"]
   end
 end
 
@@ -60,9 +65,9 @@ shared_examples 'a model with a rescuer naming its index' do
     expect(model.errors[:code]).to eq(["code must be unique for this relation"])
   end
 
-  it 'does not put the index option in the error details' do
+  it 'does not put the index_name option in the error details' do
     model = described_class.create(relation_id: 1, code: 'toto', region: 1)
-    expect(model.errors.details[:code].first).not_to have_key(:index)
+    expect(model.errors.details[:code].first).not_to have_key(:index_name)
   end
 end
 

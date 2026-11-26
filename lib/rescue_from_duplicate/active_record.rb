@@ -28,7 +28,7 @@ module RescueFromDuplicate
 
   def self.unique_index_for?(unique_indexes, handler)
     unique_indexes.any? do |index|
-      next true if handler.index_name && index.name == handler.index_name
+      next true if handler.index_names.include?(index.name)
 
       # An expression index (`lower(email)`) has a String for its columns and can only match by name.
       index.columns.is_a?(Array) && index.columns.map(&:to_s).sort == handler.columns

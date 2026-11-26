@@ -12,8 +12,8 @@ module RescueFromDuplicate
       true
     end
 
-    def index_name
-      options[:index]&.to_s
+    def index_names
+      Array(options[:index_name]).map(&:to_s)
     end
   end
 end

@@ -66,7 +66,7 @@ CreateAllTables.up
 module TestModel
   def self.included(base)
     base.rescue_from_duplicate(:handle, scope: :relation_id, message: "handle must be unique for this relation")
-    base.rescue_from_duplicate(:code, scope: :relation_id, index: "index_#{base.table_name}_unique_code", message: "code must be unique for this relation")
+    base.rescue_from_duplicate(:code, scope: :relation_id, index_name: "index_#{base.table_name}_unique_code", message: "code must be unique for this relation")
 
     base.validates(:name, uniqueness: { rescue_from_duplicate: true, case_sensitive: true }, allow_nil: true)
     base.validates(:size, uniqueness: { rescue_from_duplicate: true }, allow_nil: true)
@@ -82,7 +82,7 @@ end
 class PostgresqlModel < ActiveRecord::Base
   include TestModel
 
-  rescue_from_duplicate :email, index: "index_postgresql_models_on_lower_email", message: "email is already taken"
+  rescue_from_duplicate :email, index_name: ["index_postgresql_models_email_legacy", "index_postgresql_models_on_lower_email"], message: "email is already taken"
 
   establish_connection(CONNECTIONS.fetch(:test_postgresql))
 end

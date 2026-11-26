@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- An `index:` option on `rescue_from_duplicate` and inside `rescue_from_duplicate: { index: }` on a uniqueness
-  validation. The handler that names the violated index is used even when the index columns differ from the
-  declaration, and `missing_unique_indexes` accepts the named unique index as well as one with matching columns.
+- An `index_name:` option on `rescue_from_duplicate` and inside `rescue_from_duplicate: { index_name: }` on a
+  uniqueness validation, taking one index name or an array of names. The handler that names the violated index is
+  used even when the index columns differ from the declaration, and `missing_unique_indexes` accepts a named unique
+  index as well as one with matching columns.
 
 ### Fixed
 

@@ -56,18 +56,18 @@ end
 
 ### Naming the index
 
-By default the gem picks the handler whose attribute and scope columns equal the columns of the violated index. When the index has other columns than the declaration (an extra partitioning column, a partial index, an expression), name the index with `index:` and the gem matches the violated index by name first:
+By default the gem picks the handler whose attribute and scope columns equal the columns of the violated index. When the index has other columns than the declaration (an extra partitioning column, a partial index, an expression), name the index with `index_name:` and the gem matches the violated index by name first. `index_name:` takes one name or an array of names, for a rule that more than one index enforces (on different databases, or during a migration):
 
 ```ruby
 class ModelWithNamedIndex < ActiveRecord::Base
-  validates :code, uniqueness: { scope: :shop_id, rescue_from_duplicate: { index: "index_models_on_shop_id_and_code_and_region" } }
-  rescue_from_duplicate :token, scope: :shop_id, index: "index_models_unique_token"
+  validates :code, uniqueness: { scope: :shop_id, rescue_from_duplicate: { index_name: "index_models_on_shop_id_and_code_and_region" } }
+  rescue_from_duplicate :token, scope: :shop_id, index_name: ["index_models_unique_token", "models_pkey"]
 end
 ```
 
 If no handler names the violated index, the gem falls back to matching columns. SQLite reports only the columns of a violation, so there only column matching applies.
 
-`RescueFromDuplicate.missing_unique_indexes` treats a handler that names an index as covered when a unique index of that name exists, or when a unique index has its columns. An expression index can only be matched by name.
+`RescueFromDuplicate.missing_unique_indexes` treats a handler that names indexes as covered when a unique index has one of those names, or when a unique index has its columns. An expression index can only be matched by name.
 
 ## Installation
 

@@ -70,7 +70,7 @@ end
 
 describe "RescueFromDuplicate::ActiveRecord matching by index name" do
   let(:named_rescuer) do
-    RescueFromDuplicate::Rescuer.new(:name, scope: :shop_id, index: "index_rescuable_unique_name", message: "named")
+    RescueFromDuplicate::Rescuer.new(:name, scope: :shop_id, index_name: "index_rescuable_unique_name", message: "named")
   end
   let(:column_rescuer) do
     RescueFromDuplicate::Rescuer.new(:name, scope: [:shop_id, :type], message: "columns")
@@ -115,6 +115,18 @@ describe "RescueFromDuplicate::ActiveRecord matching by index name" do
 
   context "when a PostgreSQL-compatible error names the declared index without a DETAIL line" do
     let(:message) { "PG::UniqueViolation: ERROR:  duplicate key value violates unique constraint \"index_rescuable_unique_name\"" }
+
+    it "uses the handler that names the index" do
+      subject.create_or_update
+      expect(subject.errors[:name]).to eq ["named"]
+    end
+  end
+
+  context "when the error names one of several indexes the handler names" do
+    let(:named_rescuer) do
+      RescueFromDuplicate::Rescuer.new(:name, scope: :shop_id, index_name: ["index_rescuable_other", "index_rescuable_unique_name"], message: "named")
+    end
+    let(:message) { "Duplicate entry '1-toto-0' for key 'rescuable.index_rescuable_unique_name'" }
 
     it "uses the handler that names the index" do
       subject.create_or_update

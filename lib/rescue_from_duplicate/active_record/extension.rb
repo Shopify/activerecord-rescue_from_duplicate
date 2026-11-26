@@ -38,7 +38,7 @@ module RescueFromDuplicate::ActiveRecord
       return false unless handler
 
       attribute = handler.attributes.first
-      options = handler.options.except(:case_sensitive, :scope, :index).merge(value: self.send(:read_attribute_for_validation, attribute))
+      options = handler.options.except(:case_sensitive, :scope, :index_name).merge(value: self.send(:read_attribute_for_validation, attribute))
 
       self.errors.add(attribute, :taken, **options)
       true
@@ -52,14 +52,14 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def handler_for_index_name(handlers, exception)
-      named_handlers = handlers.select { |handler| handler.index_name }
+      named_handlers = handlers.reject { |handler| handler.index_names.empty? }
       return if named_handlers.empty?
 
       index_name = exception_index_name(exception)
       return unless index_name
 
       named_handlers.detect do |handler|
-        handler.rescue? && handler.index_name == index_name
+        handler.rescue? && handler.index_names.include?(index_name)
       end
     end
 
