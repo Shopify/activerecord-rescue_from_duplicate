@@ -122,6 +122,23 @@ describe "RescueFromDuplicate::ActiveRecord matching by index name" do
     end
   end
 
+  context "when a SQLite error names the declared index" do
+    let(:message) { "SQLite3::ConstraintException: UNIQUE constraint failed: index 'index_rescuable_unique_name'" }
+
+    it "uses the handler that names the index" do
+      subject.create_or_update
+      expect(subject.errors[:name]).to eq ["named"]
+    end
+  end
+
+  context "when a SQLite error names an index that no handler names" do
+    let(:message) { "SQLite3::ConstraintException: UNIQUE constraint failed: index 'index_rescuable_other'" }
+
+    it "raises" do
+      expect { subject.create_or_update }.to raise_error(ActiveRecord::RecordNotUnique)
+    end
+  end
+
   context "when the error names one of several indexes the handler names" do
     let(:named_rescuer) do
       RescueFromDuplicate::Rescuer.new(:name, scope: :shop_id, index_name: ["index_rescuable_other", "index_rescuable_unique_name"], message: "named")

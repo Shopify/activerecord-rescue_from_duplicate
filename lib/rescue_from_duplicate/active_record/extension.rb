@@ -3,6 +3,7 @@ require 'active_support/core_ext/class'
 module RescueFromDuplicate::ActiveRecord
   module Extension
     DUPLICATE_KEY_REGEX = /for key ['"](?<key>[^'"]+)['"]/
+    SQLITE_INDEX_REGEX = /UNIQUE constraint failed: index '(?<index>[^']+)'/
 
     extend ActiveSupport::Concern
 
@@ -85,7 +86,7 @@ module RescueFromDuplicate::ActiveRecord
 
     def exception_index_name(exception)
       if exception.message =~ /SQLite3::ConstraintException/
-        nil # SQLite reports the columns, never the index name.
+        exception.message[SQLITE_INDEX_REGEX, :index]
       elsif exception.message =~ /PG::UniqueViolation/
         postgresql_exception_index_name(exception)
       else
@@ -112,6 +113,9 @@ module RescueFromDuplicate::ActiveRecord
     end
 
     def sqlite3_exception_columns(exception)
+      # An expression index is reported by name (`index 'name'`), with no columns.
+      return if exception.message.match?(SQLITE_INDEX_REGEX)
+
       extract_columns(exception.message[/columns? (.*) (?:is|are) not unique/, 1]) ||
       extract_columns(exception.message[/UNIQUE constraint failed: ([^:]*)\:?/, 1])
     end
@@ -127,7 +131,8 @@ module RescueFromDuplicate::ActiveRecord
 
       indexes = self.class.connection.schema_cache.indexes(self.class.table_name)
       index = indexes.find { |i| i.name == index_name }
-      index ? index.columns : []
+      # An expression index (`(lower(email))`) has a String for its columns and can only match by name.
+      index && index.columns.is_a?(Array) ? index.columns : []
     end
   end
 end

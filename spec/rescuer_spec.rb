@@ -88,8 +88,21 @@ describe PostgresqlModel do
 end
 
 describe Sqlite3Model do
-  it 'raises when the index columns do not match, because SQLite does not report the index name' do
+  it 'raises when the index columns do not match, because SQLite reports only the columns of a column index' do
     Sqlite3Model.create!(relation_id: 1, code: 'toto', region: 1)
     expect { Sqlite3Model.create(relation_id: 1, code: 'toto', region: 1) }.to raise_error(ActiveRecord::RecordNotUnique)
+  end
+
+  it 'adds an error on the model when a named expression index is violated' do
+    Sqlite3Model.create!(email: 'Toto@example.com')
+    model = Sqlite3Model.create(email: 'toto@example.com')
+    expect(model.errors[:email]).to eq(["email is already taken"])
+  end
+end
+
+describe MysqlModel do
+  it 'raises ActiveRecord::RecordNotUnique when an expression index that no handler names is violated' do
+    MysqlModel.create!(email: 'Toto@example.com')
+    expect { MysqlModel.create(email: 'toto@example.com') }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 end

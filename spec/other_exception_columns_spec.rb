@@ -13,8 +13,14 @@ module RescueFromDuplicate
       )
     end
 
+    let(:expression_index) do
+      ::ActiveRecord::ConnectionAdapters::IndexDefinition.new(
+        "order_transactions", "index_order_transactions_on_lower_email", true, "(lower(`email`))"
+      )
+    end
+
     let(:model) do
-      indexes = [prefix_index, unique_index]
+      indexes = [prefix_index, unique_index, expression_index]
       connection = double(schema_cache: double(indexes: indexes))
       Class.new do
         include RescueFromDuplicate::ActiveRecord::Extension
@@ -46,6 +52,18 @@ module RescueFromDuplicate
 
       it "selects the violated index by exact name" do
         expect(columns).to eq ["shop_id", "unique_token"]
+      end
+    end
+
+    context "when the key is an expression index" do
+      let(:exception) do
+        ::ActiveRecord::RecordNotUnique.new(
+          "Duplicate entry 'abc' for key 'order_transactions.index_order_transactions_on_lower_email'"
+        )
+      end
+
+      it "returns no columns" do
+        expect(columns).to eq []
       end
     end
 
