@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.8] - 2026-11-27
+
 ### Added
 
 - An `index_name:` option on `rescue_from_duplicate` and inside `rescue_from_duplicate: { index_name: }` on a
