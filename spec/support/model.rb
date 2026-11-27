@@ -34,22 +34,32 @@ class CreateAllTables < ActiveRecord::Migration[5.2]
 
       t.string :name
       t.integer :size
+
+      t.string :code
+      t.integer :region
+      t.string :email
+      t.string :serial
     end
 
     add_index name, [:relation_id, :handle], unique: true
     add_index name, :name, unique: true
     add_index name, :size, unique: true
+    add_index name, [:relation_id, :code, :region], unique: true, name: "index_#{name}_unique_code"
+    add_index name, [:relation_id, :serial, :region], unique: true, name: "index_#{name}_unique_serial"
   end
 
   def self.up
     ActiveRecord::Base.establish_connection(CONNECTIONS.fetch(:test_mysql))
     recreate_table(:mysql_models)
+    execute "CREATE UNIQUE INDEX index_mysql_models_on_lower_email ON mysql_models ((lower(email)))"
 
     ActiveRecord::Base.establish_connection(CONNECTIONS.fetch(:test_postgresql))
     recreate_table(:postgresql_models)
+    add_index :postgresql_models, "lower(email)", unique: true, name: "index_postgresql_models_on_lower_email"
 
     ActiveRecord::Base.establish_connection(CONNECTIONS.fetch(:test_sqlite3))
     recreate_table(:sqlite3_models)
+    add_index :sqlite3_models, "lower(email)", unique: true, name: "index_sqlite3_models_on_lower_email"
   end
 end
 
@@ -60,9 +70,11 @@ CreateAllTables.up
 module TestModel
   def self.included(base)
     base.rescue_from_duplicate(:handle, scope: :relation_id, message: "handle must be unique for this relation")
+    base.rescue_from_duplicate(:code, scope: :relation_id, index_name: "index_#{base.table_name}_unique_code", message: "code must be unique for this relation")
 
     base.validates(:name, uniqueness: { rescue_from_duplicate: true, case_sensitive: true }, allow_nil: true)
     base.validates(:size, uniqueness: { rescue_from_duplicate: true }, allow_nil: true)
+    base.validates(:serial, uniqueness: { scope: :relation_id, rescue_from_duplicate: { index_name: "index_#{base.table_name}_unique_serial" } }, allow_nil: true)
   end
 end
 
@@ -75,11 +87,15 @@ end
 class PostgresqlModel < ActiveRecord::Base
   include TestModel
 
+  rescue_from_duplicate :email, index_name: ["index_postgresql_models_email_legacy", "index_postgresql_models_on_lower_email"], message: "email is already taken"
+
   establish_connection(CONNECTIONS.fetch(:test_postgresql))
 end
 
 class Sqlite3Model < ActiveRecord::Base
   include TestModel
+
+  rescue_from_duplicate :email, index_name: "index_sqlite3_models_on_lower_email", message: "email is already taken"
 
   establish_connection(CONNECTIONS.fetch(:test_sqlite3))
 end

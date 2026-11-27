@@ -46,6 +46,40 @@ shared_examples 'a model with rescued uniqueness validator' do
   end
 end
 
+shared_examples 'a model with a uniqueness validation naming its index' do
+  before do
+    allow_any_instance_of(ActiveRecord::Validations::UniquenessValidator).to(receive(:validate_each)).and_return(nil)
+    described_class.create!(relation_id: 1, serial: 'toto', region: 1)
+  end
+
+  it 'adds a taken error when the named index, whose columns differ from the validation, is violated' do
+    model = described_class.create(relation_id: 1, serial: 'toto', region: 1)
+    expect(model).not_to be_persisted
+    expect(model.errors[:serial]).to eq ["has already been taken"]
+    expect(model.errors.details[:serial].first[:error]).to eq :taken
+  end
+end
+
+shared_examples 'missing primary key finding' do |primary_key_name|
+  it 'accepts a handler that names the primary key' do
+    allow(described_class).to(receive(:_rescue_from_duplicate_handlers).and_return([
+      RescueFromDuplicate::Rescuer.new(:id, index_name: ["index_that_does_not_exist", primary_key_name]),
+    ]))
+
+    missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
+    expect(missing_unique_indexes).to be_empty
+  end
+
+  it 'reports a handler on the primary key column that names another index' do
+    allow(described_class).to(receive(:_rescue_from_duplicate_handlers).and_return([
+      RescueFromDuplicate::Rescuer.new(:id, index_name: "index_that_does_not_exist"),
+    ]))
+
+    missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
+    expect(missing_unique_indexes.map(&:columns)).to eq [["id"]]
+  end
+end
+
 shared_examples 'missing index finding' do
   describe do
     context 'all indexes are satisfied' do
@@ -67,6 +101,33 @@ shared_examples 'missing index finding' do
           RescueFromDuplicate::Rescuer.new(:name, scope: [:hello])
         ]))
       }
+
+      it 'reports a handler whose named index does not exist' do
+        allow(described_class).to(receive(:_rescue_from_duplicate_handlers).and_return([
+          RescueFromDuplicate::Rescuer.new(:code, scope: :relation_id, index_name: "index_that_does_not_exist"),
+        ]))
+
+        missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
+        expect(missing_unique_indexes.map(&:columns)).to eq [["code", "relation_id"]]
+      end
+
+      it 'accepts a handler when one of its named indexes is a unique index' do
+        allow(described_class).to(receive(:_rescue_from_duplicate_handlers).and_return([
+          RescueFromDuplicate::Rescuer.new(:code, scope: :relation_id, index_name: ["index_that_does_not_exist", "index_#{described_class.table_name}_unique_code"]),
+        ]))
+
+        missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
+        expect(missing_unique_indexes).to be_empty
+      end
+
+      it 'accepts a handler whose named index does not exist when a unique index has its columns' do
+        allow(described_class).to(receive(:_rescue_from_duplicate_handlers).and_return([
+          RescueFromDuplicate::Rescuer.new(:handle, scope: :relation_id, index_name: "index_that_does_not_exist"),
+        ]))
+
+        missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
+        expect(missing_unique_indexes).to be_empty
+      end
 
       it 'returns the missing indexes' do
         missing_unique_indexes = RescueFromDuplicate.missing_unique_indexes.select { |mi| mi.model == described_class }
@@ -92,10 +153,14 @@ end
 
 describe MysqlModel do
   it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'a model with a uniqueness validation naming its index'
   it_behaves_like 'missing index finding'
+  it_behaves_like 'missing primary key finding', "PRIMARY"
 end
 
 describe PostgresqlModel do
   it_behaves_like 'a model with rescued uniqueness validator'
+  it_behaves_like 'a model with a uniqueness validation naming its index'
   it_behaves_like 'missing index finding'
+  it_behaves_like 'missing primary key finding', "postgresql_models_pkey"
 end

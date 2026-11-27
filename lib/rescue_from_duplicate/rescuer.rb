@@ -11,5 +11,9 @@ module RescueFromDuplicate
     def rescue?
       true
     end
+
+    def index_names
+      Array(options[:index_name]).map(&:to_s)
+    end
   end
 end
