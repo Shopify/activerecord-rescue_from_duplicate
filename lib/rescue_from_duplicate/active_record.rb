@@ -52,7 +52,7 @@ module RescueFromDuplicate
     when /mysql|trilogy/i
       "PRIMARY"
     when /postg/i
-      connection.select_value(<<~SQL) || "#{table_name}_pkey"
+      connection.select_value(<<~SQL)
         SELECT conname FROM pg_constraint
         WHERE contype = 'p' AND conrelid = #{connection.quote(connection.quote_table_name(table_name))}::regclass
       SQL
